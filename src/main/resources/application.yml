@@ -1,0 +1,68 @@
+uw:
+  mydb:
+    server:
+      ip: 0.0.0.0
+      port: 8066
+    users:
+      root:
+        password: 123456
+        schemas:
+          - hotel
+          - sbtest
+        hosts:
+          - .*
+    mysql-groups:
+      local-db:                      # 复制组 名称   必须唯一
+        group-type: SINGLE_NODE           # 复制类型
+        switch-type: SWITCH              # 切换类型
+        balance-type: BALANCE_ALL_READ   # 读写分离类型
+        masters:
+         - weight: 1 #读取访问权重，默认为1.如果master主机不想承担读，可以设置为0
+           host: localhost
+           port: 3306                  # port
+           user: root                  # 用户名
+           password: umtone888            # 密码
+           min-conn: 10                   # 最小连接
+           max-conn: 100                  # 最大连接
+           max-retry: 3            # 连接重试次数
+           conn-max-age: 3600       # 连接最长寿命(s)
+           conn-idle-timeout: 60   # 最长空闲超时(s)
+           conn-busy-timeout: 60   # 最长繁忙超时(s)
+    schemas:
+      hotel:
+        base-node: local-db # baseNode设置为mysqlgroup名，schema必须和database一致。
+        tables:
+          user_info:
+            rows-limit: 1000 # 返回的最大行数
+            route: saas-cust-date # 使用的路由
+      sbtest:
+        base-node: local-db  # baseNode设置为mysqlgroup名，schema必须和database一致。
+        tables:
+          sbtest1:
+            route: saas-cust
+    routes:
+      saas-cust:
+        data-nodes:
+          - mysql-group: local-db
+            db-config: [saas_$1-10,saas_12]
+        algorithms:
+          - algorithm: uw.mydb.route.database.RouteByRange
+            params: {start: 10000, range: 1000}
+            route-key: mch_id
+          - algorithm: uw.mydb.route.database.RouteByPreset
+            params: {"1000": test.saas_big }
+            route-key: mch_id
+      saas-cust-date:
+        data-nodes:
+          - mysql-group: local-db
+            db-config: [saas_$1-10,saas_12]
+        algorithms:
+          - algorithm: uw.mydb.route.database.RouteByRange
+            params: {start: 10000, range: 1000}
+            route-key: mch_id
+          - algorithm: uw.mydb.route.database.RouteByPreset
+            params: {"10000": my.saas_big }
+            route-key: mch_id
+          - algorithm: uw.mydb.route.table.RouteByDate
+            params: {"format-pattern": "yyyyMMdd" }
+            route-key: create_date

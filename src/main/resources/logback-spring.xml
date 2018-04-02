@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <logger name="uw.mydb" level="TRACE"/>
+
+    <springProfile name="default">
+        <include
+                resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="test">
+        <include
+                resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <appender name="LOGSTASH"
+                  class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>10.8.8.78:9600</destination>
+            <writeBufferSize>256000</writeBufferSize>
+            <encoder charset="UTF-8"
+                     class="net.logstash.logback.encoder.LogstashEncoder">
+                <throwableConverter
+                        class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                    <maxDepthPerThrowable>100</maxDepthPerThrowable>
+                    <maxLength>8096</maxLength>
+                    <shortenedClassNameLength>100</shortenedClassNameLength>
+                    <exclude>org\.springframwork\.*</exclude>
+                    <rootCauseFirst>true</rootCauseFirst>
+                </throwableConverter>
+                <customFields>{"appname":"hotel-app"}</customFields>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="LOGSTASH"/>
+        </root>
+    </springProfile>
+</configuration>
