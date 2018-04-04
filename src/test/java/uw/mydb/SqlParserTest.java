@@ -27,14 +27,14 @@ import java.util.concurrent.TimeUnit;
 public class SqlParserTest {
 
     private static MydbConfig.SchemaConfig schema = null;
-    private static String selectSql = "select * from user_info a,order_main o,order_detail d where o.user_id=a.id and a.mch_id=1000 and a=1000 ";
-//    private static String insertSql = "insert into user_info (id,user_name,mch_id,state) values (1,'abc,,,\\'',1000,1) ";
-//
-//    @Benchmark
-//    public void testInsert() {
-//        SqlParser parser = new SqlParser(schema, insertSql);
-//        SqlParseResult result = parser.parse();
-//    }
+    //    private static String selectSql = "select * from user_info";
+    private static String insertSql = "insert into msc_user (id,msc_type,ref_id,ref_tag,username,password,real_name,nick_name,mobile,email,remark,auth_flag,ip_filter_type,ip_filter_value,state,create_date,modify_date) values (1000,0,0,null,null,null,null,'axeon',null,null,null,0,0,null,0,null,null)";
+
+    @Benchmark
+    public void testInsert() {
+        SqlParser parser = new SqlParser(schema, insertSql);
+        SqlParseResult result = parser.parse();
+    }
 //
 //    private static updateSql = "update user_info set create_date=now() where mch_id=1000 ";
 //    @Benchmark
@@ -57,9 +57,9 @@ public class SqlParserTest {
 
 //    private static String selectSql ="select * from user_info where id=1000 ";
 
-    @Benchmark
-    public void testSelect() {
-        SqlParser parser = new SqlParser(schema, selectSql);
-        SqlParseResult result = parser.parse();
-    }
+//    @Benchmark
+//    public void testSelect() {
+//        SqlParser parser = new SqlParser(schema, selectSql);
+//        SqlParseResult result = parser.parse();
+//    }
 }

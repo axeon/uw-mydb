@@ -1561,10 +1561,6 @@ public class Lexer {
                 return;
             }
 
-            if (!isHint && !isSafeComment(stringVal)) {
-                throw new NotAllowCommentException();
-            }
-
             return;
         }
 

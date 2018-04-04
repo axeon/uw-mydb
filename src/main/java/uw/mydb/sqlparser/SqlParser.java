@@ -337,9 +337,15 @@ public class SqlParser {
         lexer.skipTo(Token.FROM);
         //解析表内容
         parseTableInfo(lexer);
+        if (!checkRouteData()) {
+            lexer.skipToEOF();
+            splitSubSql(lexer);
+            return;
+        }
         //跳到where关键字,查找匹配。
         lexer.skipTo(Token.WHERE);
         parseWhereInfo(lexer);
+
         //截断最后的sql。
         splitSubSql(lexer);
     }
@@ -362,6 +368,21 @@ public class SqlParser {
             routeData.routeKeyData = RouteManager.getParamMap(routeData.tableConfig);
         }
         return routeData;
+    }
+
+    /**
+     * 检查是否有routeData匹配。
+     * 一些情况下，是匹配不到任何table的，这时候就不用匹配keyData了。
+     *
+     * @return
+     */
+    private boolean checkRouteData() {
+        if (mainRouteData == null || mainRouteData.routeKeyData == null) {
+            return false;
+        } else {
+            return true;
+        }
+
     }
 
     /**
@@ -447,6 +468,12 @@ public class SqlParser {
             }
             putRouteData(table, null);
         }
+        if (!checkRouteData()) {
+            lexer.skipToEOF();
+            splitSubSql(lexer);
+            return;
+        }
+        //如果有routeData匹配，采取匹配routeKeyData
         //此时走values的路
         if (lexer.token() == Token.LPAREN) {
             int pos = 0;
@@ -479,7 +506,7 @@ public class SqlParser {
                     //可以直接退了
                     break;
                 } else {
-                    if (mainRouteData.routeKeyData.isSingle()) {
+                    if (mainRouteData == null || mainRouteData.routeInfoData == null || mainRouteData.routeKeyData.isSingle()) {
                         RouteAlgorithm.RouteKeyValue rkv = mainRouteData.routeKeyData.getValue();
                         if (rkv.getType() == pos + 100) {
                             rkv.putValue(lexer.paramString());
@@ -516,12 +543,18 @@ public class SqlParser {
         lexer.check(Token.UPDATE);
         //解析表内容
         parseTableInfo(lexer);
+        if (!checkRouteData()) {
+            lexer.skipToEOF();
+            splitSubSql(lexer);
+            return;
+        }
         //跳到where关键字
         lexer.skipTo(Token.WHERE);
         parseWhereInfo(lexer);
         if (!lexer.isEOF()) {
             lexer.skipToEOF();
         }
+
         splitSubSql(lexer);
     }
 
@@ -545,6 +578,11 @@ public class SqlParser {
         lexer.check(Token.FROM);
         //解析表内容
         parseTableInfo(lexer);
+        if (!checkRouteData()) {
+            lexer.skipToEOF();
+            splitSubSql(lexer);
+            return;
+        }
         //解析Where
         //跳到where关键字
         lexer.skipTo(Token.WHERE);
@@ -726,6 +764,7 @@ public class SqlParser {
         lexerPos = lexer.currentPos();
     }
 
+
     /**
      * 设置LexerPos
      */
@@ -740,8 +779,7 @@ public class SqlParser {
      */
     private void calculateRouteInfo() {
         if (mainRouteData == null) {
-            //此时说明没有匹配到数值，给一个默认值吧，因为生成sql也需要默认值。
-            putRouteData("", null);
+            return;
         }
         //检查有没有hint，hint是强行匹配的。
         if (hintRouteInfo != null) {
@@ -770,19 +808,19 @@ public class SqlParser {
                     //此时说明是sharding配置表。
                     mainRouteData.routeInfoData = RouteManager.calculate(mainRouteData.tableConfig, mainRouteData.routeKeyData);
                 } else {
-                    //此时是非sharding配置表，过schema默认数据。
+                    //此时是非sharding配置表，给schema默认数据。
                     RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
                     routeInfoData.setSingle(new RouteAlgorithm.RouteInfo(schema.getBaseNode(), schema.getName(), mainRouteData.tableConfig.getName()));
                     mainRouteData.routeInfoData = routeInfoData;
                 }
             }
-        }
 
-        //匹配从表数据
-        if (routeDataMap != null) {
-            for (RouteData routeData : routeDataMap.values()) {
-                if (routeData.routeInfoData == null) {
-                    routeData.routeInfoData = RouteManager.calculate(routeData.tableConfig, routeData.routeKeyData);
+            //匹配从表数据
+            if (routeDataMap != null) {
+                for (RouteData routeData : routeDataMap.values()) {
+                    if (routeData.routeInfoData == null) {
+                        routeData.routeInfoData = RouteManager.calculate(routeData.tableConfig, routeData.routeKeyData);
+                    }
                 }
             }
         }
@@ -793,23 +831,12 @@ public class SqlParser {
      */
     private void generateSqlInfo() {
         //没有匹配到表名
-        if (subSqls.size() == 0) {
-            if (checkSingleRoute()) {
-                RouteAlgorithm.RouteInfo ri = mainRouteData.routeInfoData.getRouteInfo();
-                sqlInfo = new SqlParseResult.SqlInfo(sql);
-                sqlInfo.setMysqlGroup(ri.getMysqlGroup());
-                sqlInfo.setDatabase(ri.getDatabase());
-                this.parseResult.setSqlInfo(sqlInfo);
-            } else {
-                sqlInfos = new ArrayList<>();
-                for (RouteAlgorithm.RouteInfo ri : mainRouteData.routeInfoData.getRouteInfos()) {
-                    SqlParseResult.SqlInfo sb = new SqlParseResult.SqlInfo(sql);
-                    sqlInfo.setMysqlGroup(ri.getMysqlGroup());
-                    sqlInfo.setDatabase(ri.getDatabase());
-                    sqlInfos.add(sb);
-                }
-                this.parseResult.setSqlInfos(sqlInfos);
-            }
+        if (subSqls.size() <= 1) {
+            sqlInfo = new SqlParseResult.SqlInfo(sql);
+            sqlInfo.setMysqlGroup(schema.getBaseNode());
+            sqlInfo.setDatabase(schema.getName());
+            this.parseResult.setSqlInfo(sqlInfo);
+            this.parseResult.setSingle(true);
         } else {
             //每个mainRouteInfoData对应一个mysqlGroup
             if (checkSingleRoute()) {
@@ -868,7 +895,7 @@ public class SqlParser {
      * @return
      */
     private boolean checkSingleRoute() {
-        boolean isSingle = mainRouteData.isSingle();
+        boolean isSingle = mainRouteData == null || mainRouteData.isSingle();
         if (routeDataMap != null) {
             for (RouteData routeData : routeDataMap.values()) {
                 isSingle = isSingle && routeData.isSingle();

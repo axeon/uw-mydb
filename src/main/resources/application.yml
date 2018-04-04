@@ -2,12 +2,12 @@ uw:
   mydb:
     server:
       ip: 0.0.0.0
-      port: 8066
+      port: 3309
     users:
       root:
-        password: 123456
+        password: umtone888
         schemas:
-          - hotel
+          - auth
           - sbtest
         hosts:
           - .*
@@ -29,7 +29,7 @@ uw:
            conn-idle-timeout: 60   # 最长空闲超时(s)
            conn-busy-timeout: 60   # 最长繁忙超时(s)
     schemas:
-      hotel:
+      auth:
         base-node: local-db # baseNode设置为mysqlgroup名，schema必须和database一致。
         tables:
           user_info:
