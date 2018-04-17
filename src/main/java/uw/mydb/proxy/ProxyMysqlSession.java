@@ -170,7 +170,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             groupService.getMasterService().getSession(this).exeCommand(CommandPacket.build("use " + this.schema.getName()));
         } else {
             //报错，找不到这个schema。
-            failMessage(channel, ErrorCode.ER_NO_DB_ERROR, "No database!");
+            failMessage(ErrorCode.ER_NO_DB_ERROR, "No database!");
         }
     }
 
@@ -243,7 +243,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             logger.warn("no such algorithm", e);
         }
         if (!Arrays.equals(encryptPass, authPacket.password)) {
-            failMessage(ctx, ErrorCode.ER_ACCESS_DENIED_ERROR, "Access denied for user '" + authPacket.user + "', because password is error ");
+            failMessage(ctx, ErrorCode.ER_PASSWORD_NO_MATCH, "Access denied for user '" + authPacket.user + "', because password is error ");
             ctx.close();
             return;
         }
@@ -306,15 +306,18 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         cmd.read(buf);
         String sql = new String(cmd.arg);
         if (logger.isTraceEnabled()) {
-            logger.trace("正在执行SQL:{}", sql);
+            logger.trace("正在执行SQL: {}", sql);
         }
         //进行sql解析
         //根据解析结果判定，当前支持1.单实例执行；2.多实例执行
         SqlParser parser = new SqlParser(this, sql);
         SqlParseResult routeResult = parser.parse();
-        if (routeResult == null) {
-            failMessage(channel, ErrorCode.ERR_FOUND_EXCEPTION, "sql解析失败!");
-            logger.warn("无法找到合适的mysqlSession!");
+        //sql解析后，routeResult=null的，可能已经在parser里处理过了。
+        if (routeResult.hasError()) {
+            //errorcode>0的，发送错误信息。
+            if (routeResult.getErrorCode() > 0) {
+                failMessage(ctx, routeResult.getErrorCode(), routeResult.getErrorMessage());
+            }
             return;
         }
         //压测时，可直接返回ok包的。
@@ -322,7 +325,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             //单实例执行直接绑定执行即可。
             MySqlGroupService groupService = MySqlGroupManager.getMysqlGroupService(routeResult.getSqlInfo().getMysqlGroup());
             if (groupService == null) {
-                failMessage(channel, ErrorCode.ERR_FOUND_EXCEPTION, "无法找到合适的mysqlGroup!");
+                failMessage(ctx, ErrorCode.ERR_NO_ROUTE_NODE, "Can't route to mysqlGroup!");
                 logger.warn("无法找到合适的mysqlGroup!");
                 return;
             }
@@ -333,7 +336,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
                 mysqlSession = groupService.getLBReadService().getSession(this);
             }
             if (mysqlSession == null) {
-                failMessage(channel, ErrorCode.ERR_FOUND_EXCEPTION, "无法找到合适的mysqlSession!");
+                failMessage(ctx, ErrorCode.ERR_NO_ROUTE_NODE, "Can't route to mysqlGroup!");
                 logger.warn("无法找到合适的mysqlSession!");
                 return;
             }
@@ -342,7 +345,6 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             //多实例执行使用CountDownLatch同步返回所有结果后，再执行转发，可能会导致阻塞。
             multiNodeExecutor.submit(new ProxyMultiNodeHandler(channel, routeResult));
         }
-
     }
 
     /**
@@ -428,14 +430,14 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         errorPacket.writeToChannel(ctx);
     }
 
+
     /**
      * 错误提示。
      *
-     * @param channel
      * @param errorNo
      * @param info
      */
-    public void failMessage(Channel channel, int errorNo, String info) {
+    public void failMessage(int errorNo, String info) {
         ErrorPacket errorPacket = new ErrorPacket();
         errorPacket.packetId = 1;
         errorPacket.errorNo = errorNo;

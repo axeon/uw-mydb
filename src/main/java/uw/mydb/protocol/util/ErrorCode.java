@@ -7,19 +7,10 @@ package uw.mydb.protocol.util;
  */
 public interface ErrorCode {
 
-    // mycdb error code
-    int ERR_BAD_LOGIC_DB = 3000;
-    int ERR_OPEN_SOCKET = 3001;
-    int ERR_CONNECT_SOCKET = 3002;
-    int ERR_REGISTER = 3004;
-    int ERR_READ = 3005;
-    int ERR_PUT_WRITE_QUEUE = 3006;
-    int ERR_WRITE_BY_EVENT = 3007;
-    int ERR_WRITE_BY_QUEUE = 3008;
-    int ERR_HANDLE_DATA = 3009;
-    int ERR_NOT_SUPPORTED = 3010;
-    int ERR_MULTI_NODE_FAILED = 3011;
-    int ERR_WRONG_USED = 3012;
+    // mydb error code
+    int ERR_NO_ROUTE_NODE = 3000;
+    int ERR_NO_ROUTE_KEY = 3001;
+    int ERR_NOT_SUPPORTED = 3002;
     int ERR_FOUND_EXCEPTION = 3344;
 
 

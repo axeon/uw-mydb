@@ -79,6 +79,26 @@ public class MydbConfig {
 
 
     /**
+     * 路由类型枚举。
+     */
+    public enum MatchTypeEnum {
+        /**
+         * 精确匹配。
+         */
+        MATCH_FIX,
+
+        /**
+         * 匹配默认值，如果没有匹配值，可以匹配到默认值上。
+         */
+        MATCH_DEFAULT,
+
+        /**
+         * 匹配全部值，如果没有匹配值，则匹配所有数值。
+         */
+        MATCH_ALL;
+    }
+
+    /**
      * 服务配置。
      */
     public static class ServerConfig {
@@ -457,7 +477,6 @@ public class MydbConfig {
         }
     }
 
-
     /**
      * 表配置。
      */
@@ -477,6 +496,15 @@ public class MydbConfig {
          * 路由设置。
          */
         private String route;
+
+
+        /**
+         * 匹配类型。
+         * MATCH_FIX精确匹配：必须有匹配值，才能匹配，否则返回无法匹配。
+         * MATCH_DEFAULT允许匹配有默认值：如果没有匹配值，可以匹配到默认值上。
+         * MATCH_ALL允许匹配全量：如果没有匹配值，则全部匹配。
+         */
+        private MatchTypeEnum matchType = MatchTypeEnum.MATCH_FIX;
 
         public String getName() {
             return name;
@@ -500,6 +528,14 @@ public class MydbConfig {
 
         public void setRoute(String route) {
             this.route = route;
+        }
+
+        public MatchTypeEnum getMatchType() {
+            return matchType;
+        }
+
+        public void setMatchType(MatchTypeEnum matchType) {
+            this.matchType = matchType;
         }
     }
 

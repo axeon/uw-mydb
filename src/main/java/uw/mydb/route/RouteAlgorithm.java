@@ -154,6 +154,24 @@ public abstract class RouteAlgorithm {
 
 
         /**
+         * 是否有数值？
+         *
+         * @return
+         */
+        public boolean isEmptyValue() {
+            boolean empty = false;
+            if (value != null) {
+                empty = value.isEmpty();
+            }
+            if (params != null) {
+                for (RouteKeyValue rkv : params.values()) {
+                    empty = empty && rkv.isEmpty();
+                }
+            }
+            return empty;
+        }
+
+        /**
          * 是否为单一数值。
          *
          * @return
@@ -267,6 +285,24 @@ public abstract class RouteAlgorithm {
          * 多值类型
          */
         private List<String> values;
+
+        /**
+         * 是否为空。
+         *
+         * @return
+         */
+        public boolean isEmpty() {
+            switch (type) {
+                case SINGLE:
+                    return value1 == null;
+                case RANGE:
+                    return value1 == null && value2 == null;
+                case MULTI:
+                    return values == null;
+                default:
+                    return true;
+            }
+        }
 
         public void putValue(String value) {
             type = SINGLE;

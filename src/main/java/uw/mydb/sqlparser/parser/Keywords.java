@@ -44,6 +44,7 @@ public class Keywords {
 
         map.put("DELETE", Token.DELETE);
         map.put("DESC", Token.DESC);
+        map.put("DESCRIBE", Token.DESCRIBE);
         map.put("DISTINCT", Token.DISTINCT);
         map.put("DROP", Token.DROP);
         map.put("ELSE", Token.ELSE);

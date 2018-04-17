@@ -18,6 +18,16 @@ public class SqlParseResult {
     private String sql;
 
     /**
+     * 错误编码。
+     */
+    private int errorCode;
+
+    /**
+     * 错误信息。
+     */
+    private String errorMessage;
+
+    /**
      * 是否单一路由？
      */
     private Boolean isSingle;
@@ -41,24 +51,81 @@ public class SqlParseResult {
         this.sql = sql;
     }
 
+    /**
+     * 获得sql。
+     *
+     * @return
+     */
     public String getSql() {
         return sql;
     }
 
+    /**
+     * 是否有错误。
+     *
+     * @return
+     */
+    public boolean hasError() {
+        return errorCode != 0;
+    }
+
+    /**
+     * 设置错误信息。
+     *
+     * @param errorCode
+     * @param errorMessage
+     */
+    public void setErrorInfo(int errorCode, String errorMessage) {
+        this.errorCode = errorCode;
+        this.errorMessage = errorMessage;
+    }
+
+    /**
+     * 获得错误码。
+     *
+     * @return
+     */
+    public int getErrorCode() {
+        return errorCode;
+    }
+
+    /**
+     * 获得错误信息。
+     *
+     * @return
+     */
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    /**
+     * 是否master路由。
+     *
+     * @return
+     */
     public boolean isMaster() {
         return isMaster;
     }
 
+    /**
+     * 设置master路由状态。
+     *
+     * @param master
+     */
     public void setMaster(boolean master) {
         isMaster = master;
     }
 
+    /**
+     * 如果未赋值，则设置master状态
+     *
+     * @param master
+     */
     public void setMasterIfNull(boolean master) {
         if (this.isMaster == null) {
             isMaster = master;
         }
     }
-
 
     public boolean isSingle() {
         return isSingle;

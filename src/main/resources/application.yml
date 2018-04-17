@@ -33,13 +33,13 @@ uw:
         base-node: local-db # baseNode设置为mysqlgroup名，schema必须和database一致。
         tables:
           user_info:
-            rows-limit: 1000 # 返回的最大行数
             route: saas-cust-date # 使用的路由
       sbtest:
         base-node: local-db  # baseNode设置为mysqlgroup名，schema必须和database一致。
         tables:
           sbtest1:
             route: saas-cust
+            match-type:  MATCH_FIX  #路由类型，默认是绝对匹配。
     routes:
       saas-cust:
         data-nodes:

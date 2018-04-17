@@ -24,10 +24,29 @@
 2. 放弃事务管理，因为无法准确实现分布式事务，且可能造成不稳定。
 3. 不支持last_insert_id()，因为对于集群应用毫无价值。
 
-#需要支持的功能
-1. 对于insert多value的优化。
-
 # 路由功能说明
+1.所有不在路由名单里的SQL，直接发到schema的base node上，以满足某些客户端的需要。
+1.对于所有的dml，在路由名单里的，不指定参数，默认不予执行，可以配置转发参数。
+2.对于所有的ddl，在路由名单里的，不指定参数，默认不予执行，可以配置转发参数。
+
+# DML SQL支持
+SELECT 支持
+UPDATE 支持
+DELETE 支持
+REPLACE 暂不支持
+INSERT 支持单value，多value优化中。
+
+# DDL SQL 支持
+ALTER TABLE 支持
+CREATE TABLE/INDEX 支持
+DROP TABLE/INDEX 支持
+TRUNCATE TABLE  支持
+
+# 在虚拟schema上支持
+SET 
+SHOW 
+EXPLAIN
+
 ## 基于分库的算法
 ### hash 哈希分库算法
 

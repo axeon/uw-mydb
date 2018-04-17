@@ -104,6 +104,7 @@ public enum Token {
     SOME("SOME"),
     ANY("ANY"),
     TRUNCATE("TRUNCATE"),
+    RENAME("RENAME"),
 
     RETURN("RETURN"),
 
@@ -138,8 +139,9 @@ public enum Token {
     SQLSTATE("SQLSTATE"),
     CONDITION("CONDITION"),
     DIV("DIV"),
+    DESCRIBE("DESCRIBE"),
 
-    //postgresql
+
     WINDOW("WINDOW"),
     OFFSET("OFFSET"),
     ROW("ROW"),
