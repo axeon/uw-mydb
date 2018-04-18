@@ -2,7 +2,6 @@ package uw.mydb.mysql.tool;
 
 import io.netty.buffer.ByteBuf;
 import uw.mydb.protocol.packet.ErrorPacket;
-import uw.mydb.protocol.packet.MySqlPacket;
 import uw.mydb.protocol.packet.OKPacket;
 
 /**
@@ -17,29 +16,28 @@ public class ExeSqlTask extends LocalTaskAdapter<Long> {
         super(mysqlGroupName, localCmdCallback);
     }
 
-
     /**
-     * 处理返回结果。
+     * 收到Ok数据包。
      *
-     * @param packetType
      * @param buf
      */
     @Override
-    public void receivePacket(byte packetType, ByteBuf buf) {
-        //解析数据包。。。
-        switch (packetType) {
-            case MySqlPacket.PACKET_OK:
-                OKPacket okPacket = new OKPacket();
-                okPacket.read(buf);
-                data = okPacket.affectedRows;
-                break;
-            case MySqlPacket.PACKET_ERROR:
-                ErrorPacket errorPacket = new ErrorPacket();
-                errorPacket.read(buf);
-                errorMessage = errorPacket.message;
-                break;
-            default:
-                break;
-        }
+    public void receiveOkPacket(byte packetId, ByteBuf buf) {
+        OKPacket okPacket = new OKPacket();
+        okPacket.read(buf);
+        data = okPacket.affectedRows;
     }
+
+    /**
+     * 收到Error数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveErrorPacket(byte packetId, ByteBuf buf) {
+        ErrorPacket errorPacket = new ErrorPacket();
+        errorPacket.read(buf);
+        errorMessage = errorPacket.message;
+    }
+
 }

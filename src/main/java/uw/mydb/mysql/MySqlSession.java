@@ -22,6 +22,11 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
 
     /**
+     * 结果集中间状态
+     */
+    public static final int RESULT_FIELD = 2;
+
+    /**
      * 结果集初始状态
      */
     public static final int RESULT_INIT = 0;
@@ -29,11 +34,10 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * 结果集开始状态
      */
     public static final int RESULT_START = 1;
-    /**
-     * 结果集中间状态
-     */
-    public static final int RESULT_MID = 2;
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MySqlSession.class);
+    /**
+     * 并发状态更新。
+     */
     private static final AtomicIntegerFieldUpdater<MySqlSession> STATE_UPDATER;
 
     static {
@@ -44,10 +48,12 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * 创建时间.
      */
     final long createTime = SystemClock.now();
+
     /**
      * 对应的channel。
      */
     Channel channel;
+
     /**
      * 开始使用时间.
      */
@@ -147,7 +153,6 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         this.sessionCallback = null;
         this.mysqlService.requiteSession(this);
         this.lastAccess = SystemClock.now();
-//        logger.info("{} now is unbind!!!", this);
     }
 
     /**
@@ -204,21 +209,17 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      */
     private void setResultStart() {
         resultStatus = RESULT_START;
-//        logger.warn("{} 结果集开始了！", this);
     }
-
 
     /**
      * 检查结果集状态。
      */
     private boolean checkResultEnd() {
         if (resultStatus == RESULT_START) {
-            resultStatus = RESULT_MID;
-//            logger.warn("{} 结果集已经过FIELD了！", this);
+            resultStatus = RESULT_FIELD;
             return false;
         } else {
             resultStatus = RESULT_INIT;
-//            logger.warn("{} 结果集已经完事儿！", this);
             return true;
         }
     }
@@ -233,44 +234,48 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         byte status = buf.getByte(4);
         switch (status) {
             case MySqlPacket.PACKET_OK:
-                sessionCallback.receivePacket(MySqlPacket.PACKET_OK, buf);
+                sessionCallback.receiveOkPacket(packetId, buf);
+                //收到数据就可以解绑了。
                 unbind();
-                break;
-            case MySqlPacket.PACKET_EOF:
-                //此时要判断resultStatus，确定结束才可以解绑
-                sessionCallback.receivePacket(MySqlPacket.PACKET_EOF, buf);
-                if (checkResultEnd()) {
-                    EOFPacket eof = new EOFPacket();
-                    eof.read(buf);
-                    //确定没有更多数据了，再解绑，此处可能有问题！
-                    if (!eof.hasStatusFlag(MySqlPacket.SERVER_MORE_RESULTS_EXISTS)) {
-                        unbind();
-                    } else {
-                        resultStatus = RESULT_INIT;
-                    }
-                }
                 break;
             case MySqlPacket.PACKET_ERROR:
                 //直接转发走
-                sessionCallback.receivePacket(MySqlPacket.PACKET_ERROR, buf);
+                sessionCallback.receiveErrorPacket(packetId, buf);
                 //都报错了，直接解绑
                 unbind();
                 break;
+            case MySqlPacket.PACKET_EOF:
+                //包长度小于9才可能是EOF，否则可能是数据包。
+                if (buf.readableBytes() < 9) {
+                    //此时要判断resultStatus，确定结束才可以解绑
+                    if (checkResultEnd()) {
+                        EOFPacket eof = new EOFPacket();
+                        eof.read(buf);
+                        sessionCallback.receiveRowDataEOFPacket(packetId, buf);
+                        //确定没有更多数据了，再解绑，此处可能有问题！
+                        if (!eof.hasStatusFlag(MySqlPacket.SERVER_MORE_RESULTS_EXISTS)) {
+                            unbind();
+                        } else {
+                            resultStatus = RESULT_INIT;
+                        }
+                    } else {
+                        sessionCallback.receiveFieldEOFPacket(packetId, buf);
+                    }
+                    break;
+                }
             default:
                 if (resultStatus == RESULT_INIT) {
                     //此时可能是ResultSetHeader
                     setResultStart();
-                    sessionCallback.receivePacket(MySqlPacket.PACKET_RESULT_SET_HEADER, buf);
+                    sessionCallback.receiveResultSetHeaderPacket(packetId, buf);
                 } else {
                     if (resultStatus == RESULT_START) {
                         //field区
-                        sessionCallback.receivePacket(MySqlPacket.PACKET_FIELD_DATA, buf);
-                    } else if (resultStatus == RESULT_MID) {
-                        //数据区
-                        sessionCallback.receivePacket(MySqlPacket.PACKET_ROW_DATA, buf);
+                        sessionCallback.receiveFieldDataPacket(packetId, buf);
                     } else {
-                        //未知(可能错包，黏包)。。。转发
-                        sessionCallback.receivePacket(MySqlPacket.PACKET_UNKNOW, buf);
+                        //数据区
+                        sessionCallback.receiveRowDataPacket(packetId, buf);
+
                     }
                 }
         }

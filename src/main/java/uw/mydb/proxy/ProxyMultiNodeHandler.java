@@ -9,8 +9,8 @@ import uw.mydb.mysql.MySqlGroupManager;
 import uw.mydb.mysql.MySqlGroupService;
 import uw.mydb.mysql.MySqlSessionCallback;
 import uw.mydb.protocol.packet.ErrorPacket;
-import uw.mydb.protocol.packet.MySqlPacket;
 import uw.mydb.protocol.packet.OKPacket;
+import uw.mydb.protocol.packet.ResultSetHeaderPacket;
 import uw.mydb.sqlparser.SqlParseResult;
 
 import java.util.concurrent.CountDownLatch;
@@ -48,36 +48,88 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
 
     public ProxyMultiNodeHandler(Channel channel, SqlParseResult routeResult) {
         this.channel = channel;
+        this.routeResult = routeResult;
         countDownLatch = new CountDownLatch(routeResult.getSqlInfos().size());
     }
 
     /**
-     * 转发后端的数据包。
+     * 收到Ok数据包。
+     *
+     * @param buf
      */
     @Override
-    public void receivePacket(byte packetType, ByteBuf buf) {
-        //解析数据包。。。
-        switch (packetType) {
-            case MySqlPacket.PACKET_OK:
-                OKPacket okPacket = new OKPacket();
-                okPacket.read(buf);
-                affectedRows += okPacket.affectedRows;
-                break;
-            case MySqlPacket.PACKET_FIELD_DATA:
-                break;
-            case MySqlPacket.PACKET_ROW_DATA:
-                break;
-            case MySqlPacket.PACKET_ERROR:
-                ErrorPacket errorPacket = new ErrorPacket();
-                errorPacket.read(buf);
-//                errorMessage = errorPacket.message;
-                break;
-            default:
-                break;
-
-        }
+    public void receiveOkPacket(byte packetId, ByteBuf buf) {
+        OKPacket okPacket = new OKPacket();
+        okPacket.read(buf);
+        affectedRows += okPacket.affectedRows;
+        channel.write(buf.retain().duplicate());
     }
 
+    /**
+     * 收到Error数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveErrorPacket(byte packetId, ByteBuf buf) {
+        ErrorPacket errorPacket = new ErrorPacket();
+        errorPacket.read(buf);
+        channel.write(buf.retain().duplicate());
+
+    }
+
+    /**
+     * 收到ResultSetHeader数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
+        ResultSetHeaderPacket rsp = new ResultSetHeaderPacket();
+        rsp.read(buf);
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 收到FieldPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+
+    }
+
+    /**
+     * 收到FieldEOFPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveFieldEOFPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 收到RowDataPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 收到RowDataEOFPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
 
     /**
      * 通知解绑定。
@@ -95,11 +147,11 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
                 groupService.getMasterService().getSession(this).exeCommand(sqlInfo.genPacket());
             }
         }
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
+//        try {
+//            countDownLatch.await(60, TimeUnit.SECONDS);
+//        } catch (InterruptedException e) {
+//            logger.error(e.getLocalizedMessage(), e);
+//        }
         //此处汇聚输出。
     }
 }

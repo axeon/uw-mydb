@@ -273,16 +273,77 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     }
 
     /**
-     * 转发后端的数据包。
+     * 收到Ok数据包。
+     *
+     * @param buf
      */
     @Override
-    public void receivePacket(byte packetType, ByteBuf buf) {
-        //后续可能有内存泄漏，需要释放buf
+    public void receiveOkPacket(byte packetId, ByteBuf buf) {
         channel.write(buf.retain().duplicate());
     }
 
     /**
-     * 初始化db操作。
+     * 收到Error数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveErrorPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 收到ResultSetHeader数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 收到FieldPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 收到FieldEOFPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveFieldEOFPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 收到RowDataPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 收到RowDataEOFPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain().duplicate());
+    }
+
+    /**
+     * 切换数据库操作。
      *
      * @param ctx
      * @param buf
@@ -290,7 +351,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     public void initDB(ChannelHandlerContext ctx, ByteBuf buf) {
         CommandPacket cmd = new CommandPacket();
         cmd.read(buf);
-        OKPacket.writeOkToChannel(ctx);
+        //切换Schema
+        this.setSchema(new String(cmd.arg));
     }
 
     /**

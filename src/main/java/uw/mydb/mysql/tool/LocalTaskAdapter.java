@@ -77,13 +77,74 @@ public abstract class LocalTaskAdapter<T> implements MySqlSessionCallback {
     }
 
     /**
-     * 接受的数据包。
+     * 收到Ok数据包。
      *
-     * @param packetType
      * @param buf
      */
     @Override
-    public abstract void receivePacket(byte packetType, ByteBuf buf);
+    public void receiveOkPacket(byte packetId, ByteBuf buf) {
+
+    }
+
+    /**
+     * 收到Error数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveErrorPacket(byte packetId, ByteBuf buf) {
+
+    }
+
+    /**
+     * 收到ResultSetHeader数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
+
+    }
+
+    /**
+     * 收到FieldPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
+
+    }
+
+    /**
+     * 收到FieldEOFPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveFieldEOFPacket(byte packetId, ByteBuf buf) {
+
+    }
+
+    /**
+     * 收到RowDataPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
+
+    }
+
+    /**
+     * 收到RowDataEOFPacket数据包。
+     *
+     * @param buf
+     */
+    @Override
+    public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
+
+    }
 
     /**
      * 解绑的时候激活回调事件。

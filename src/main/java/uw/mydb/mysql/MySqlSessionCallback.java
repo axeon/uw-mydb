@@ -10,12 +10,62 @@ import io.netty.buffer.ByteBuf;
 public interface MySqlSessionCallback {
 
     /**
-     * 通知数据。
+     * 收到Ok数据包。
      *
-     * @param packetType
+     * @param packetId
      * @param buf
      */
-    void receivePacket(byte packetType, ByteBuf buf);
+    void receiveOkPacket(byte packetId, ByteBuf buf);
+
+    /**
+     * 收到Error数据包。
+     *
+     * @param packetId
+     * @param buf
+     */
+    void receiveErrorPacket(byte packetId, ByteBuf buf);
+
+    /**
+     * 收到ResultSetHeader数据包。
+     *
+     * @param packetId
+     * @param buf
+     */
+    void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf);
+
+
+    /**
+     * 收到FieldPacket数据包。
+     *
+     * @param packetId
+     * @param buf
+     */
+    void receiveFieldDataPacket(byte packetId, ByteBuf buf);
+
+    /**
+     * 收到FieldEOFPacket数据包。
+     *
+     * @param packetId
+     * @param buf
+     */
+    void receiveFieldEOFPacket(byte packetId, ByteBuf buf);
+
+
+    /**
+     * 收到RowDataPacket数据包。
+     *
+     * @param packetId
+     * @param buf
+     */
+    void receiveRowDataPacket(byte packetId, ByteBuf buf);
+
+    /**
+     * 收到RowDataEOFPacket数据包。
+     *
+     * @param packetId
+     * @param buf
+     */
+    void receiveRowDataEOFPacket(byte packetId, ByteBuf buf);
 
     /**
      * 通知解绑定。
