@@ -279,7 +279,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveOkPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -289,7 +289,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveErrorPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -299,7 +299,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -309,7 +309,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -318,8 +318,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param buf
      */
     @Override
-    public void receiveFieldEOFPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+    public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain());
     }
 
     /**
@@ -329,7 +329,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -339,7 +339,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -405,7 +405,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             mysqlSession.exeCommand(routeResult.getSqlInfo().genPacket());
         } else {
             //多实例执行使用CountDownLatch同步返回所有结果后，再执行转发，可能会导致阻塞。
-            multiNodeExecutor.submit(new ProxyMultiNodeHandler(channel, routeResult));
+            new ProxyMultiNodeHandler(channel, routeResult).run();
         }
     }
 

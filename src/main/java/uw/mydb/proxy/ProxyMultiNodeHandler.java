@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import uw.mydb.mysql.MySqlGroupManager;
 import uw.mydb.mysql.MySqlGroupService;
 import uw.mydb.mysql.MySqlSessionCallback;
-import uw.mydb.protocol.packet.ErrorPacket;
 import uw.mydb.protocol.packet.OKPacket;
 import uw.mydb.protocol.packet.ResultSetHeaderPacket;
 import uw.mydb.sqlparser.SqlParseResult;
@@ -62,7 +61,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
         OKPacket okPacket = new OKPacket();
         okPacket.read(buf);
         affectedRows += okPacket.affectedRows;
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -72,10 +71,9 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     @Override
     public void receiveErrorPacket(byte packetId, ByteBuf buf) {
-        ErrorPacket errorPacket = new ErrorPacket();
-        errorPacket.read(buf);
-        channel.write(buf.retain().duplicate());
-
+//        ErrorPacket errorPacket = new ErrorPacket();
+//        errorPacket.read(buf);
+        channel.write(buf.retain());
     }
 
     /**
@@ -87,7 +85,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
     public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
         ResultSetHeaderPacket rsp = new ResultSetHeaderPacket();
         rsp.read(buf);
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -97,7 +95,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     @Override
     public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
 
     }
 
@@ -107,8 +105,8 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      * @param buf
      */
     @Override
-    public void receiveFieldEOFPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+    public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
+        channel.write(buf.retain());
     }
 
     /**
@@ -118,7 +116,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     @Override
     public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**
@@ -128,7 +126,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     @Override
     public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain().duplicate());
+        channel.write(buf.retain());
     }
 
     /**

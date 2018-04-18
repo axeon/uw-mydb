@@ -48,7 +48,7 @@ public interface MySqlSessionCallback {
      * @param packetId
      * @param buf
      */
-    void receiveFieldEOFPacket(byte packetId, ByteBuf buf);
+    void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf);
 
 
     /**

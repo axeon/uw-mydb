@@ -1,5 +1,6 @@
 package uw.mydb.sqlparser;
 
+import org.slf4j.LoggerFactory;
 import uw.mydb.protocol.packet.CommandPacket;
 import uw.mydb.protocol.packet.MySqlPacket;
 
@@ -11,6 +12,9 @@ import java.util.ArrayList;
  * @author axeon
  */
 public class SqlParseResult {
+
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SqlParseResult.class);
+
 
     /**
      * 原始的sql语句。
@@ -221,6 +225,9 @@ public class SqlParseResult {
             CommandPacket packet = new CommandPacket();
             packet.command = MySqlPacket.CMD_QUERY;
             packet.arg = getNewSql().getBytes();
+
+            logger.debug("正在mysql端执行SQL: {}", getNewSql());
+
             return packet;
         }
     }

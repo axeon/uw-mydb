@@ -232,6 +232,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
     public void handleCommandResponse(ChannelHandlerContext ctx, ByteBuf buf) {
         byte packetId = buf.getByte(3);
         byte status = buf.getByte(4);
+//        logger.debug(ByteBufUtil.prettyHexDump(buf));
         switch (status) {
             case MySqlPacket.PACKET_OK:
                 sessionCallback.receiveOkPacket(packetId, buf);
@@ -246,11 +247,13 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
                 break;
             case MySqlPacket.PACKET_EOF:
                 //包长度小于9才可能是EOF，否则可能是数据包。
-                if (buf.readableBytes() < 9) {
+                if (buf.readableBytes() <= 9) {
                     //此时要判断resultStatus，确定结束才可以解绑
                     if (checkResultEnd()) {
                         EOFPacket eof = new EOFPacket();
                         eof.read(buf);
+                        //之前读过了，必须要重置一下。
+                        buf.resetReaderIndex();
                         sessionCallback.receiveRowDataEOFPacket(packetId, buf);
                         //确定没有更多数据了，再解绑，此处可能有问题！
                         if (!eof.hasStatusFlag(MySqlPacket.SERVER_MORE_RESULTS_EXISTS)) {
@@ -259,27 +262,29 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
                             resultStatus = RESULT_INIT;
                         }
                     } else {
-                        sessionCallback.receiveFieldEOFPacket(packetId, buf);
+                        sessionCallback.receiveFieldDataEOFPacket(packetId, buf);
                     }
                     break;
                 }
             default:
-                if (resultStatus == RESULT_INIT) {
-                    //此时可能是ResultSetHeader
-                    setResultStart();
-                    sessionCallback.receiveResultSetHeaderPacket(packetId, buf);
-                } else {
-                    if (resultStatus == RESULT_START) {
+                switch (resultStatus) {
+                    case RESULT_INIT:
+                        //此时是ResultSetHeader
+                        setResultStart();
+                        sessionCallback.receiveResultSetHeaderPacket(packetId, buf);
+                        break;
+                    case RESULT_START:
                         //field区
                         sessionCallback.receiveFieldDataPacket(packetId, buf);
-                    } else {
+                        break;
+                    default:
                         //数据区
                         sessionCallback.receiveRowDataPacket(packetId, buf);
-
-                    }
+                        break;
                 }
         }
     }
+
 
     /**
      * 真正关闭连接。

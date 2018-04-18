@@ -122,7 +122,7 @@ public abstract class LocalTaskAdapter<T> implements MySqlSessionCallback {
      * @param buf
      */
     @Override
-    public void receiveFieldEOFPacket(byte packetId, ByteBuf buf) {
+    public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
 
     }
 

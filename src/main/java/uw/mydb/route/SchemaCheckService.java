@@ -141,6 +141,10 @@ public class SchemaCheckService {
                     @Override
                     public void onSuccess(ArrayList<String> strings) {
                         for (String database : strings) {
+                            //过滤系统数据库。
+                            if (database.equals("mysql") || database.equals("sys") || database.equals("information_schema") || database.equals("performance_schema") || database.equals("test")) {
+                                continue;
+                            }
                             setSchemaStatus(groupName, database, null);
                             logger.debug("正在加载数据库[{}.{}]信息...", groupName, database);
                             new SingleListTask(groupName, new LocalCmdCallback<ArrayList<String>>() {

@@ -13,11 +13,7 @@ public abstract class MySqlPacket {
     // 后端报文类型
     public static final byte PACKET_OK = 0;
     public static final byte PACKET_ERROR = (byte) 0xFF;
-    public static final byte PACKET_UNKNOW = (byte) 0xEF;
     public static final byte PACKET_EOF = (byte) 0xFE;
-    public static final byte PACKET_RESULT_SET_HEADER = (byte) 0xF0;
-    public static final byte PACKET_FIELD_DATA = (byte) 0xF1;
-    public static final byte PACKET_ROW_DATA = (byte) 0xF2;
     public static final byte PACKET_AUTH = 1;
     public static final byte PACKET_QUIT = 2;
 
