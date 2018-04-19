@@ -171,6 +171,7 @@ public class SqlParser {
                     parseTruncate(lexer);
                     break;
                 case EXPLAIN:
+                    parseExplain(lexer);
                     break;
                 case USE:
                     parseUse(lexer);
@@ -404,8 +405,6 @@ public class SqlParser {
             lexer.nextToken();
             switch (lexer.token()) {
                 case HINT:
-                    //处理注解
-                    parseHint(lexer);
                 case COMMENT:
                 case LINE_COMMENT:
                 case MULTI_LINE_COMMENT:
@@ -428,6 +427,10 @@ public class SqlParser {
                 default:
                     break;
             }
+            //explain 给schema默认数据。
+            RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
+            routeInfoData.setSingle(new RouteAlgorithm.RouteInfo(schema.getBaseNode(), schema.getName(), mainRouteData.tableConfig.getName()));
+            mainRouteData.routeInfoData = routeInfoData;
         }
 
     }
@@ -871,7 +874,7 @@ public class SqlParser {
      * 增加子sql
      */
     private void splitSubSql(Lexer lexer) {
-        if (lexer.isEOF()) {
+        if (lexer.isEOF() && lexerPos > 0) {
             subSqls.add(sql.substring(lexerPos));
         } else {
             subSqls.add(sql.substring(lexerPos, lexer.currentMark()));
@@ -904,6 +907,9 @@ public class SqlParser {
                     RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
                     routeInfoData.setAll(new HashSet<>(list));
                     mainRouteData.routeInfoData = routeInfoData;
+                } else {
+                    this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_INFO, "NO TABLE ROUTE INFO: " + sql);
+                    return;
                 }
             } else {
                 //指定路由列表
@@ -925,6 +931,11 @@ public class SqlParser {
                 //这种情况一般是完全无法匹配的，生成sql的时候直接给默认schema。
                 return;
             }
+            //外部強行賦值的，直接返回。
+            if (mainRouteData.routeInfoData != null) {
+                return;
+            }
+
             if (checkTableHasRoute()) {
                 //此时Table是有Route的
                 if (!mainRouteData.routeKeyData.isEmptyValue()) {

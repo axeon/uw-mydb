@@ -232,7 +232,6 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
     public void handleCommandResponse(ChannelHandlerContext ctx, ByteBuf buf) {
         byte packetId = buf.getByte(3);
         byte status = buf.getByte(4);
-//        logger.debug(ByteBufUtil.prettyHexDump(buf));
         switch (status) {
             case MySqlPacket.PACKET_OK:
                 sessionCallback.receiveOkPacket(packetId, buf);

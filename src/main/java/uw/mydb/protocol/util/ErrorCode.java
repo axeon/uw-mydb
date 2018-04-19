@@ -9,8 +9,9 @@ public interface ErrorCode {
 
     // mydb error code
     int ERR_NO_ROUTE_NODE = 3000;
-    int ERR_NO_ROUTE_KEY = 3001;
-    int ERR_NOT_SUPPORTED = 3002;
+    int ERR_NO_ROUTE_INFO = 3001;
+    int ERR_NO_ROUTE_KEY = 3002;
+    int ERR_NOT_SUPPORTED = 3003;
     int ERR_FOUND_EXCEPTION = 3344;
 
 

@@ -7,7 +7,6 @@ uw:
       root:
         password: umtone888
         schemas:
-          - auth
           - sbtest
         hosts:
           - .*
@@ -29,11 +28,6 @@ uw:
            conn-idle-timeout: 60   # 最长空闲超时(s)
            conn-busy-timeout: 60   # 最长繁忙超时(s)
     schemas:
-      auth:
-        base-node: local-db # baseNode设置为mysqlgroup名，schema必须和database一致。
-        tables:
-          user_info:
-            route: saas-cust-date # 使用的路由
       sbtest:
         base-node: local-db  # baseNode设置为mysqlgroup名，schema必须和database一致。
         tables:
@@ -44,13 +38,13 @@ uw:
       saas-cust:
         data-nodes:
           - mysql-group: local-db
-            db-config: [saas_$1-10,saas_12]
+            db-config: [saas_$1-2]
         algorithms:
           - algorithm: uw.mydb.route.database.RouteByRange
             params: {start: 10000, range: 1000}
             route-key: mch_id
           - algorithm: uw.mydb.route.database.RouteByPreset
-            params: {"1000": test.saas_big }
+            params: {"1000": local-db.saas_big }
             route-key: mch_id
       saas-cust-date:
         data-nodes:

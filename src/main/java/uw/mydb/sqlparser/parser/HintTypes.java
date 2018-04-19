@@ -10,7 +10,7 @@ public class HintTypes {
     /**
      * mydb hint关键字。
      */
-    public static final String MYDB_HINT = "!mydb:";
+    public static final String MYDB_HINT = "#mydb:";
 
     /**
      * 数据类型。

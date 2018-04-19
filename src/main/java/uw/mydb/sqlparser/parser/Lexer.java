@@ -1517,7 +1517,7 @@ public class Lexer {
             boolean isHint = false;
             int startHintSp = bufPos + 1;
             if (ch == '!' //
-                    || ch == '+' // oceanbase hints
+                    || ch == '#' // oceanbase hints
                     ) {
                 isHint = true;
                 scanChar();
