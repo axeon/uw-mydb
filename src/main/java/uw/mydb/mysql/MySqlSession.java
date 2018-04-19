@@ -57,7 +57,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
     /**
      * 开始使用时间.
      */
-    long lastAccess;
+    long lastAccess = createTime;
 
     /**
      * 归属的service
@@ -199,6 +199,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
             throw new RuntimeException(e.getMessage());
         }
         packet.writeToChannel(ctx);
+        ctx.flush();
         //进入验证模式。
         setState(STATE_AUTH);
     }
@@ -286,6 +287,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
 
 
     /**
+     * f
      * 真正关闭连接。
      */
     public void trueClose() {

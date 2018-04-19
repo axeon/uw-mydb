@@ -201,6 +201,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         hs.restOfScrambleBuff = rand2;
         //写channel里
         hs.writeToChannel(ctx);
+        ctx.flush();
     }
 
     /**
@@ -490,6 +491,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         errorPacket.errorNo = errorNo;
         errorPacket.message = info;
         errorPacket.writeToChannel(ctx);
+        ctx.flush();
     }
 
 
@@ -505,6 +507,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         errorPacket.errorNo = errorNo;
         errorPacket.message = info;
         errorPacket.writeToChannel(channel);
+        channel.flush();
     }
 
     /**

@@ -3,6 +3,8 @@ package uw.mydb.protocol.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MySqlPacket
@@ -10,6 +12,10 @@ import io.netty.channel.ChannelHandlerContext;
  * @author axeon
  */
 public abstract class MySqlPacket {
+
+    private static final Logger logger = LoggerFactory.getLogger(MySqlPacket.class);
+
+
     // 后端报文类型
     public static final byte PACKET_OK = 0;
     public static final byte PACKET_ERROR = (byte) 0xFF;
@@ -186,7 +192,7 @@ public abstract class MySqlPacket {
     public void writeToChannel(ChannelHandlerContext ctx) {
         ByteBuf buf = ctx.alloc().buffer();
         write(buf);
-        ctx.writeAndFlush(buf);
+        ctx.write(buf);
     }
 
     /**
@@ -197,18 +203,9 @@ public abstract class MySqlPacket {
     public void writeToChannel(Channel channel) {
         ByteBuf buf = channel.alloc().buffer();
         write(buf);
-        channel.writeAndFlush(buf);
+        channel.write(buf);
     }
 
-    /**
-     * 把数据包直接写入ctx。
-     *
-     * @param ctx
-     */
-    public void writeToChannel(ChannelHandlerContext ctx, ByteBuf buf) {
-        write(buf);
-        ctx.writeAndFlush(buf);
-    }
 
     /**
      * 计算数据包大小，不包含包头长度。

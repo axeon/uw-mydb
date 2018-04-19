@@ -80,7 +80,6 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     private ErrorPacket errorPacket = null;
 
-
     /**
      * 要查询的mysqlGroups
      */
@@ -134,7 +133,6 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
         }
         if (packetSeq.compareAndSet(0, packetId)) {
             channel.write(buf.retain());
-            logger.debug(ByteBufUtil.prettyHexDump(buf));
         }
     }
 
@@ -150,7 +148,6 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
         }
         if (packetSeq.compareAndSet(packetId - 1, packetId)) {
             channel.write(buf.retain());
-            logger.debug(ByteBufUtil.prettyHexDump(buf));
         }
     }
 
@@ -163,8 +160,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
     public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
         if (packetStep.compareAndSet(PACKET_STEP_INIT, PACKET_STEP_EOF_FIELD)) {
             channel.write(buf.retain());
-            packetSeq.getAndIncrement();
-            logger.debug(ByteBufUtil.prettyHexDump(buf));
+            packetSeq.incrementAndGet();
         }
     }
 
@@ -175,7 +171,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     @Override
     public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
-        packetId = (byte) packetSeq.getAndIncrement();
+        packetId = (byte) packetSeq.incrementAndGet();
         buf.setByte(3, packetId);
         channel.write(buf.retain());
         logger.debug(ByteBufUtil.prettyHexDump(buf));
@@ -189,6 +185,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
     @Override
     public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
         //在最后汇总输出，可以不用管了。
+//        logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
     }
 
     /**
@@ -229,19 +226,20 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
         if (packetStep.get() > PACKET_STEP_INIT) {
             //输出eof包。
             EOFPacket eofPacket = new EOFPacket();
-            eofPacket.packetId = (byte) packetSeq.getAndIncrement();
+            eofPacket.packetId = (byte) packetSeq.incrementAndGet();
             eofPacket.warningCount = errorCount.get();
-            channel.write(eofPacket);
+            eofPacket.status = 0x22;
+            eofPacket.writeToChannel(channel);
         } else {
             if (affectedRows.get() > -1) {
                 //说明有ok包。
                 OKPacket okPacket = new OKPacket();
                 okPacket.affectedRows = affectedRows.get();
                 okPacket.warningCount = errorCount.get();
-                channel.write(okPacket);
+                okPacket.writeToChannel(channel);
             } else {
                 //说明全部就是错误包啦，直接返回第一個error包
-                channel.write(errorPacket);
+                errorPacket.writeToChannel(channel);
             }
         }
         channel.flush();

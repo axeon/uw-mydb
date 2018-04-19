@@ -25,8 +25,8 @@ uw:
            max-conn: 100                  # 最大连接
            max-retry: 3            # 连接重试次数
            conn-max-age: 3600       # 连接最长寿命(s)
-           conn-idle-timeout: 60   # 最长空闲超时(s)
-           conn-busy-timeout: 60   # 最长繁忙超时(s)
+           conn-idle-timeout: 180   # 最长空闲超时(s)
+           conn-busy-timeout: 180   # 最长繁忙超时(s)
     schemas:
       sbtest:
         base-node: local-db  # baseNode设置为mysqlgroup名，schema必须和database一致。

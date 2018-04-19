@@ -56,15 +56,25 @@ public class SchemaCheckService {
     public static void start() {
         if (isRunning.compareAndSet(false, true)) {
             config = MydbConfigManager.getConfig();
-            loadSchemaScript();
-            loadSchemaInfo();
             scheduledExecutorService = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("SchemaCheckService-%d").setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
+            scheduledExecutorService.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    loadSchemaScript();
+                }
+            }, 10, TimeUnit.SECONDS);
+            scheduledExecutorService.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    loadSchemaInfo();
+                }
+            }, 20, TimeUnit.SECONDS);
             scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
                     autoCreateTable();
                 }
-            }, 5, 3600, TimeUnit.SECONDS);
+            }, 30, 3600, TimeUnit.SECONDS);
         }
     }
 
