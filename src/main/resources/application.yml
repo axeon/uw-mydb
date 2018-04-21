@@ -43,9 +43,6 @@ uw:
           - algorithm: uw.mydb.route.database.RouteByRange
             params: {start: 10000, range: 1000}
             route-key: mch_id
-          - algorithm: uw.mydb.route.database.RouteByPreset
-            params: {"1000": local-db.saas_big }
-            route-key: mch_id
       saas-cust-date:
         data-nodes:
           - mysql-group: local-db

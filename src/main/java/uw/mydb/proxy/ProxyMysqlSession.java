@@ -3,7 +3,6 @@ package uw.mydb.proxy;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
@@ -60,7 +59,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     /**
      * 绑定的channel
      */
-    private Channel channel;
+    private ChannelHandlerContext ctx;
 
     /**
      * session Id
@@ -115,8 +114,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MutiNodeService-%d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
     ;
 
-    public ProxyMysqlSession(Channel channel) {
-        this.channel = channel;
+    public ProxyMysqlSession(ChannelHandlerContext ctx) {
+        this.ctx = ctx;
         this.id = sessionIdGenerator.incrementAndGet();
     }
 
@@ -232,7 +231,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             }
         }
         if (!isPassed) {
-            failMessage(ctx, ErrorCode.ER_ACCESS_DENIED_ERROR, "Access denied for user '" + authPacket.user + "' with address '" + this.channel + "'");
+            failMessage(ctx, ErrorCode.ER_ACCESS_DENIED_ERROR, "Access denied for user '" + authPacket.user + "' with address '" + this.ctx + "'");
             ctx.close();
             return;
         }
@@ -280,7 +279,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveOkPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain());
+        ctx.write(buf.retain());
     }
 
     /**
@@ -290,7 +289,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveErrorPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain());
+        ctx.write(buf.retain());
     }
 
     /**
@@ -300,7 +299,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain());
+        ctx.write(buf.retain());
     }
 
     /**
@@ -310,7 +309,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain());
+        ctx.write(buf.retain());
     }
 
     /**
@@ -320,7 +319,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain());
+        ctx.write(buf.retain());
     }
 
     /**
@@ -330,7 +329,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain());
+        ctx.write(buf.retain());
     }
 
     /**
@@ -340,7 +339,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
-        channel.write(buf.retain());
+        ctx.write(buf.retain());
     }
 
     /**
@@ -406,7 +405,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             mysqlSession.exeCommand(routeResult.getSqlInfo().genPacket());
         } else {
             //多实例执行使用CountDownLatch同步返回所有结果后，再执行转发，可能会导致阻塞。
-            new ProxyMultiNodeHandler(channel, routeResult).run();
+            new ProxyMultiNodeHandler(this.ctx, routeResult).run();
         }
     }
 
@@ -506,8 +505,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         errorPacket.packetId = 1;
         errorPacket.errorNo = errorNo;
         errorPacket.message = info;
-        errorPacket.writeToChannel(channel);
-        channel.flush();
+        errorPacket.writeToChannel(ctx);
+        ctx.flush();
     }
 
     /**
@@ -522,6 +521,6 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void unbind() {
-        this.channel.flush();
+        this.ctx.flush();
     }
 }

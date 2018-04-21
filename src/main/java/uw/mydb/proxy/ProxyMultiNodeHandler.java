@@ -3,7 +3,7 @@ package uw.mydb.proxy;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uw.mydb.mysql.MySqlGroupManager;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author axeon
  */
-public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
+public class ProxyMultiNodeHandler implements MySqlSessionCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyMultiNodeHandler.class);
 
@@ -48,7 +48,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
     /**
      * 绑定的channel
      */
-    private Channel channel;
+    private ChannelHandlerContext ctx;
 
     /**
      * 行数
@@ -85,8 +85,8 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     private SqlParseResult routeResult;
 
-    public ProxyMultiNodeHandler(Channel channel, SqlParseResult routeResult) {
-        this.channel = channel;
+    public ProxyMultiNodeHandler(ChannelHandlerContext ctx, SqlParseResult routeResult) {
+        this.ctx = ctx;
         this.routeResult = routeResult;
         countDownLatch = new CountDownLatch(routeResult.getSqlInfos().size());
     }
@@ -132,7 +132,8 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
             return;
         }
         if (packetSeq.compareAndSet(0, packetId)) {
-            channel.write(buf.retain());
+            logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
+            ctx.write(buf.retain().duplicate());
         }
     }
 
@@ -147,7 +148,8 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
             return;
         }
         if (packetSeq.compareAndSet(packetId - 1, packetId)) {
-            channel.write(buf.retain());
+            logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
+            ctx.write(buf.retain().duplicate());
         }
     }
 
@@ -159,7 +161,8 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
     @Override
     public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
         if (packetStep.compareAndSet(PACKET_STEP_INIT, PACKET_STEP_EOF_FIELD)) {
-            channel.write(buf.retain());
+            logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
+            ctx.write(buf.retain().duplicate());
             packetSeq.incrementAndGet();
         }
     }
@@ -173,8 +176,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
     public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
         packetId = (byte) packetSeq.incrementAndGet();
         buf.setByte(3, packetId);
-        channel.write(buf.retain());
-        logger.debug(ByteBufUtil.prettyHexDump(buf));
+        ctx.write(buf.retain().duplicate());
     }
 
     /**
@@ -196,7 +198,6 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
         countDownLatch.countDown();
     }
 
-    @Override
     public void run() {
         for (SqlParseResult.SqlInfo sqlInfo : routeResult.getSqlInfos()) {
             MySqlGroupService groupService = MySqlGroupManager.getMysqlGroupService(sqlInfo.getMysqlGroup());
@@ -229,20 +230,20 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
             eofPacket.packetId = (byte) packetSeq.incrementAndGet();
             eofPacket.warningCount = errorCount.get();
             eofPacket.status = 0x22;
-            eofPacket.writeToChannel(channel);
+            eofPacket.writeToChannel(ctx);
         } else {
             if (affectedRows.get() > -1) {
                 //说明有ok包。
                 OKPacket okPacket = new OKPacket();
                 okPacket.affectedRows = affectedRows.get();
                 okPacket.warningCount = errorCount.get();
-                okPacket.writeToChannel(channel);
+                okPacket.writeToChannel(ctx);
             } else {
                 //说明全部就是错误包啦，直接返回第一個error包
-                errorPacket.writeToChannel(channel);
+                errorPacket.writeToChannel(ctx);
             }
         }
-        channel.flush();
+        ctx.flush();
 
     }
 }

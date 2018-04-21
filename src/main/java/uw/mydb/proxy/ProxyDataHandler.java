@@ -29,7 +29,7 @@ public class ProxyDataHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ProxyMysqlSession session = new ProxyMysqlSession(ctx.channel());
+        ProxyMysqlSession session = new ProxyMysqlSession(ctx);
         InetSocketAddress address = (InetSocketAddress) ctx.channel().remoteAddress();
         session.setHost(address.getAddress().getHostAddress());
         session.setPort(address.getPort());
