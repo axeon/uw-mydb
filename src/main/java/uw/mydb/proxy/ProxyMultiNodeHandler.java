@@ -2,7 +2,6 @@ package uw.mydb.proxy;
 
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author axeon
  */
-public class ProxyMultiNodeHandler implements MySqlSessionCallback {
+public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyMultiNodeHandler.class);
 
@@ -127,13 +126,12 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback {
      * @param buf
      */
     @Override
-    public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
+    public synchronized void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
         if (packetStep.get() == PACKET_STEP_EOF_FIELD) {
             return;
         }
         if (packetSeq.compareAndSet(0, packetId)) {
-            logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
-            ctx.write(buf.retain().duplicate());
+            ctx.write(buf.retain());
         }
     }
 
@@ -143,13 +141,12 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback {
      * @param buf
      */
     @Override
-    public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
+    public synchronized void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
         if (packetStep.get() == PACKET_STEP_EOF_FIELD) {
             return;
         }
         if (packetSeq.compareAndSet(packetId - 1, packetId)) {
-            logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
-            ctx.write(buf.retain().duplicate());
+            ctx.write(buf.retain());
         }
     }
 
@@ -159,10 +156,9 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback {
      * @param buf
      */
     @Override
-    public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
+    public synchronized void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
         if (packetStep.compareAndSet(PACKET_STEP_INIT, PACKET_STEP_EOF_FIELD)) {
-            logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
-            ctx.write(buf.retain().duplicate());
+            ctx.write(buf.retain());
             packetSeq.incrementAndGet();
         }
     }
@@ -173,10 +169,10 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback {
      * @param buf
      */
     @Override
-    public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
-        packetId = (byte) packetSeq.incrementAndGet();
+    public synchronized void receiveRowDataPacket(byte packetId, ByteBuf buf) {
+        packetId = (byte) (packetSeq.incrementAndGet());
         buf.setByte(3, packetId);
-        ctx.write(buf.retain().duplicate());
+        ctx.write(buf.retain());
     }
 
     /**
@@ -187,7 +183,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback {
     @Override
     public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
         //在最后汇总输出，可以不用管了。
-//        logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
+        ;
     }
 
     /**
@@ -198,6 +194,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback {
         countDownLatch.countDown();
     }
 
+    @Override
     public void run() {
         for (SqlParseResult.SqlInfo sqlInfo : routeResult.getSqlInfos()) {
             MySqlGroupService groupService = MySqlGroupManager.getMysqlGroupService(sqlInfo.getMysqlGroup());
@@ -235,6 +232,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback {
             if (affectedRows.get() > -1) {
                 //说明有ok包。
                 OKPacket okPacket = new OKPacket();
+                okPacket.packetId = 1;
                 okPacket.affectedRows = affectedRows.get();
                 okPacket.warningCount = errorCount.get();
                 okPacket.writeToChannel(ctx);

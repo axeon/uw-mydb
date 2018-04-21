@@ -1,7 +1,6 @@
 package uw.mydb.protocol.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -194,7 +193,6 @@ public abstract class MySqlPacket {
         ByteBuf buf = ctx.alloc().buffer();
         write(buf);
         ctx.write(buf);
-        logger.debug("****************************" + ByteBufUtil.prettyHexDump(buf));
     }
 
     /**

@@ -405,7 +405,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             mysqlSession.exeCommand(routeResult.getSqlInfo().genPacket());
         } else {
             //多实例执行使用CountDownLatch同步返回所有结果后，再执行转发，可能会导致阻塞。
-            new ProxyMultiNodeHandler(this.ctx, routeResult).run();
+            multiNodeExecutor.submit(new ProxyMultiNodeHandler(this.ctx, routeResult));
         }
     }
 

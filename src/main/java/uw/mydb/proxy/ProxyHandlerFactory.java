@@ -16,6 +16,7 @@ public class ProxyHandlerFactory extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel ch) {
         // decode mysql packet depend on it's length
+//        ch.pipeline().addLast( new LoggingHandler(LogLevel.INFO));
         ch.pipeline().addLast(new MysqlPacketDecoder());
 //        ch.pipeline().addLast(group, "ProxyDataHandler", new ProxyDataHandler());
         ch.pipeline().addLast(new ProxyDataHandler());

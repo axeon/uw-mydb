@@ -15,6 +15,7 @@ public class MySqlDataHandlerFactory extends ChannelInitializer<SocketChannel> {
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
+//        ch.pipeline().addLast( new LoggingHandler(LogLevel.INFO));
         ch.pipeline().addLast(new MysqlPacketDecoder());
 //        ch.pipeline().addLast(group,"MysqlDataHander",new MySqlDataHandler());
         ch.pipeline().addLast(new MySqlDataHandler());
