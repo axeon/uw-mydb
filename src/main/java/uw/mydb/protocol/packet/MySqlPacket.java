@@ -180,7 +180,8 @@ public abstract class MySqlPacket {
     public byte packetId = 0;
 
     /**
-     * 把数据包通过后端连接写出，一般使用buffer机制来提高写的吞吐量。
+     * 把数据包通过后端连接写出。
+     * @param  buffer
      */
     public abstract void write(ByteBuf buffer);
 
@@ -214,6 +215,7 @@ public abstract class MySqlPacket {
 
     /**
      * 取得数据包信息
+     * @return 包信息。
      */
     protected abstract String getPacketInfo();
 

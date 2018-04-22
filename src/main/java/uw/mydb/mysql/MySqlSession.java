@@ -25,7 +25,6 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * 结果集中间状态
      */
     public static final int RESULT_FIELD = 2;
-
     /**
      * 结果集初始状态
      */
@@ -34,7 +33,12 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * 结果集开始状态
      */
     public static final int RESULT_START = 1;
+
+    /**
+     * logger
+     */
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MySqlSession.class);
+
     /**
      * 并发状态更新。
      */
@@ -80,6 +84,26 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      */
     private int resultStatus = RESULT_INIT;
 
+    /**
+     * 执行计数。
+     */
+    private int exeCount;
+
+    /**
+     * 执行汇总时间。
+     */
+    private int exeTime;
+
+    /**
+     * 发送字节数。
+     */
+    private long sendBytes;
+
+    /**
+     * 接收字节数。
+     */
+    private long recvBytes;
+
     public MySqlSession(MySqlService mysqlService, Channel channel) {
         this.mysqlService = mysqlService;
         this.channel = channel;
@@ -121,6 +145,8 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * @param buf
      */
     public void exeCommand(ByteBuf buf) {
+        //标记发送字节数。
+        sendBytes += buf.readableBytes();
         channel.writeAndFlush(buf.retain());
     }
 
@@ -132,6 +158,8 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
     public void exeCommand(CommandPacket command) {
         ByteBuf buf = channel.alloc().buffer();
         command.write(buf);
+        //标记发送字节数。
+        sendBytes += buf.readableBytes();
         channel.writeAndFlush(buf);
     }
 
@@ -149,10 +177,13 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * 解绑。
      */
     public void unbind() {
+        long now = SystemClock.now();
+        exeCount++;
+        exeTime += (now - this.lastAccess);
+        this.lastAccess = now;
         this.sessionCallback.unbind();
         this.sessionCallback = null;
         this.mysqlService.requiteSession(this);
-        this.lastAccess = SystemClock.now();
     }
 
     /**
@@ -231,6 +262,8 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * @param buf
      */
     public void handleCommandResponse(ChannelHandlerContext ctx, ByteBuf buf) {
+        //标记接收字节数。
+        recvBytes += buf.readableBytes();
         byte packetId = buf.getByte(3);
         byte status = buf.getByte(4);
         switch (status) {

@@ -20,6 +20,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static uw.mydb.mysql.util.ConcurrentBag.IConcurrentBagEntry.STATE_NORMAL;
@@ -82,7 +83,13 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
      */
     private boolean isAlive = true;
 
+    /**
+     * service name。
+     */
     private String name;
+
+
+    private LongAdder sendBytes = new LongAdder();
 
     public MySqlService(MySqlGroupService mysqlGroupService, MydbConfig.MysqlConfig config) {
         this.config = config;

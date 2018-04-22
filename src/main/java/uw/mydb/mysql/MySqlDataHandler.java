@@ -26,12 +26,11 @@ public class MySqlDataHandler extends ChannelInboundHandlerAdapter {
         switch (session.getState()) {
             case MySqlSession.STATE_USING:
                 //开始接受业务数据。
-//                logger.info("STATE_USING:\n" + ByteBufUtil.prettyHexDump(buf));
                 session.handleCommandResponse(ctx, buf);
                 break;
             case MySqlSession.STATE_NORMAL:
                 //闲置idle接收到的信息
-                logger.warn("!!!未处理信息:\n" + ByteBufUtil.prettyHexDump(buf));
+                logger.warn("!!!未处理信息:" + ByteBufUtil.prettyHexDump(buf));
                 break;
             case MySqlSession.STATE_AUTH:
                 //验证阶段。
