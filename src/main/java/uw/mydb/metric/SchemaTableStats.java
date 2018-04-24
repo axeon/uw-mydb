@@ -1,32 +1,30 @@
-package uw.mydb.mysql;
+package uw.mydb.metric;
 
 /**
- * mysql服务统计数据。
+ * schema统计。
  */
-public class MysqlServiceStats {
+public class SchemaTableStats {
 
-    /**
-     * 所有连接数。
-     */
-    protected volatile int totalConnections;
-    /**
-     * 空闲连接数。
-     */
-    protected volatile int idleConnections;
-    /**
-     * 活动连接数。
-     */
-    protected volatile int activeConnections;
-
-    /**
-     * 等候线程数。
-     */
-    protected volatile int pendingThreads;
 
     /**
      * 请求sql执行次数。
      */
     protected volatile int sqlCount;
+
+    /**
+     * 查询计数。
+     */
+    protected volatile int selectCount;
+
+    /**
+     * 更新计数。
+     */
+    protected volatile int updateCount;
+
+    /**
+     * 删除计数。
+     */
+    protected volatile int deleteCount;
 
     /**
      * 执行成功次数。
@@ -37,6 +35,16 @@ public class MysqlServiceStats {
      * 执行失败次数。
      */
     protected volatile int exeFailureCount;
+
+    /**
+     * 返回行计数。
+     */
+    protected volatile int exeRowsCount;
+
+    /**
+     * 影响行计数。
+     */
+    protected volatile int effectRowsCount;
 
     /**
      * 执行消耗时间。
