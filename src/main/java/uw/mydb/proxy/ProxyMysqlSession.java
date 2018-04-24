@@ -15,7 +15,7 @@ import uw.mydb.mysql.MySqlGroupService;
 import uw.mydb.mysql.MySqlSession;
 import uw.mydb.mysql.MySqlSessionCallback;
 import uw.mydb.protocol.packet.*;
-import uw.mydb.protocol.util.Capabilitie;
+import uw.mydb.protocol.util.Capability;
 import uw.mydb.protocol.util.ErrorCode;
 import uw.mydb.sqlparser.SqlParseResult;
 import uw.mydb.sqlparser.SqlParser;
@@ -194,7 +194,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         hs.serverVersion = GlobalConstants.SERVER_VERSION;
         hs.threadId = id;
         hs.seed = rand1;
-        hs.serverCapabilities = Capabilitie.getServerCapabilities();
+        hs.serverCapabilities = Capability.getServerCapabilities();
 //        hs.serverCharsetIndex = (byte) (session.charsetIndex & 0xff);
         hs.serverStatus = 2;
         hs.restOfScrambleBuff = rand2;

@@ -1,7 +1,7 @@
 package uw.mydb.protocol.packet;
 
 import io.netty.buffer.ByteBuf;
-import uw.mydb.protocol.util.Capabilitie;
+import uw.mydb.protocol.util.Capability;
 import uw.mydb.util.ByteBufUtils;
 
 /**
@@ -39,7 +39,7 @@ public class AuthPacket extends MySqlPacket {
         buf.skipBytes(FILLER.length);
         user = ByteBufUtils.readStringWithNull(buf);
         password = ByteBufUtils.readBytesWithLength(buf);
-        if (((clientFlags & Capabilitie.CLIENT_CONNECT_WITH_DB) != 0)) {
+        if (((clientFlags & Capability.CLIENT_CONNECT_WITH_DB) != 0)) {
             database = ByteBufUtils.readStringWithNull(buf);
         }
     }

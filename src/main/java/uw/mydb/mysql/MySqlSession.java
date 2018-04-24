@@ -7,7 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.LoggerFactory;
 import uw.mydb.mysql.util.ConcurrentBag;
 import uw.mydb.protocol.packet.*;
-import uw.mydb.protocol.util.Capabilitie;
+import uw.mydb.protocol.util.Capability;
 import uw.mydb.util.SecurityUtils;
 import uw.mydb.util.SystemClock;
 
@@ -220,7 +220,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         // 发送应答报文给后端
         AuthPacket packet = new AuthPacket();
         packet.packetId = 1;
-        packet.clientFlags = Capabilitie.initClientFlags();
+        packet.clientFlags = Capability.initClientFlags();
         packet.maxPacketSize = 1024 * 1024;
         packet.charsetIndex = charsetIndex;
         packet.user = mysqlService.getConfig().getUser();

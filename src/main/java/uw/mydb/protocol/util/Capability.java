@@ -5,7 +5,7 @@ package uw.mydb.protocol.util;
  *
  * @author axeon
  */
-public class Capabilitie {
+public class Capability {
 
     /**
      * server capabilities
@@ -36,11 +36,14 @@ public class Capabilitie {
     // 当使用这样的语法时解析器会产生一个错误，这对于一些ODBC的程序限制bug来说是有用的。
     public static final int CLIENT_NO_SCHEMA = 16;
 
-    // Can use compression protocol
-    // 使用压缩协议
+    /**
+     * 使用压缩协议
+     */
     public static final int CLIENT_COMPRESS = 32;
 
-    // Odbc client
+    /**
+     * Odbc client
+     */
     public static final int CLIENT_ODBC = 64;
 
     // Can use LOAD DATA LOCAL
@@ -89,51 +92,51 @@ public class Capabilitie {
 
     public static long initClientFlags() {
         int flag = 0;
-        flag |= Capabilitie.CLIENT_LONG_PASSWORD;
-        flag |= Capabilitie.CLIENT_FOUND_ROWS;
-        flag |= Capabilitie.CLIENT_LONG_FLAG;
-        flag |= Capabilitie.CLIENT_CONNECT_WITH_DB;
-        // flag |= Capabilitie.CLIENT_NO_SCHEMA;
+        flag |= Capability.CLIENT_LONG_PASSWORD;
+        flag |= Capability.CLIENT_FOUND_ROWS;
+        flag |= Capability.CLIENT_LONG_FLAG;
+        flag |= Capability.CLIENT_CONNECT_WITH_DB;
+        // flag |= Capability.CLIENT_NO_SCHEMA;
         boolean usingCompress = false;
         if (usingCompress) {
-            flag |= Capabilitie.CLIENT_COMPRESS;
+            flag |= Capability.CLIENT_COMPRESS;
         }
-        flag |= Capabilitie.CLIENT_ODBC;
-        flag |= Capabilitie.CLIENT_LOCAL_FILES;
-        flag |= Capabilitie.CLIENT_IGNORE_SPACE;
-        flag |= Capabilitie.CLIENT_PROTOCOL_41;
-        flag |= Capabilitie.CLIENT_INTERACTIVE;
-        // flag |= Capabilitie.CLIENT_SSL;
-        flag |= Capabilitie.CLIENT_IGNORE_SIGPIPE;
-        flag |= Capabilitie.CLIENT_TRANSACTIONS;
-        // flag |= Capabilitie.CLIENT_RESERVED;
-        flag |= Capabilitie.CLIENT_SECURE_CONNECTION;
+        flag |= Capability.CLIENT_ODBC;
+        flag |= Capability.CLIENT_LOCAL_FILES;
+        flag |= Capability.CLIENT_IGNORE_SPACE;
+        flag |= Capability.CLIENT_PROTOCOL_41;
+        flag |= Capability.CLIENT_INTERACTIVE;
+        // flag |= Capability.CLIENT_SSL;
+        flag |= Capability.CLIENT_IGNORE_SIGPIPE;
+        flag |= Capability.CLIENT_TRANSACTIONS;
+        // flag |= Capability.CLIENT_RESERVED;
+        flag |= Capability.CLIENT_SECURE_CONNECTION;
         // client extension
-        flag |= Capabilitie.CLIENT_MULTI_STATEMENTS;
-        flag |= Capabilitie.CLIENT_MULTI_RESULTS;
+        flag |= Capability.CLIENT_MULTI_STATEMENTS;
+        flag |= Capability.CLIENT_MULTI_RESULTS;
         return flag;
     }
 
     public static int getServerCapabilities() {
         int flag = 0;
-        flag |= Capabilitie.CLIENT_LONG_PASSWORD;
-        flag |= Capabilitie.CLIENT_FOUND_ROWS;
-        flag |= Capabilitie.CLIENT_LONG_FLAG;
-        flag |= Capabilitie.CLIENT_CONNECT_WITH_DB;
-        // flag |= Capabilitie.CLIENT_NO_SCHEMA;
+        flag |= Capability.CLIENT_LONG_PASSWORD;
+        flag |= Capability.CLIENT_FOUND_ROWS;
+        flag |= Capability.CLIENT_LONG_FLAG;
+        flag |= Capability.CLIENT_CONNECT_WITH_DB;
+        // flag |= Capability.CLIENT_NO_SCHEMA;
         // if (usingCompress) {
-        // flag |= Capabilitie.CLIENT_COMPRESS;
+        // flag |= Capability.CLIENT_COMPRESS;
         // }
-        flag |= Capabilitie.CLIENT_ODBC;
-        flag |= Capabilitie.CLIENT_LOCAL_FILES;
-        flag |= Capabilitie.CLIENT_IGNORE_SPACE;
-        flag |= Capabilitie.CLIENT_PROTOCOL_41;
-        flag |= Capabilitie.CLIENT_INTERACTIVE;
-        // flag |= Capabilitie.CLIENT_SSL;
-        flag |= Capabilitie.CLIENT_IGNORE_SIGPIPE;
-        flag |= Capabilitie.CLIENT_TRANSACTIONS;
+        flag |= Capability.CLIENT_ODBC;
+        flag |= Capability.CLIENT_LOCAL_FILES;
+        flag |= Capability.CLIENT_IGNORE_SPACE;
+        flag |= Capability.CLIENT_PROTOCOL_41;
+        flag |= Capability.CLIENT_INTERACTIVE;
+        // flag |= Capability.CLIENT_SSL;
+        flag |= Capability.CLIENT_IGNORE_SIGPIPE;
+        flag |= Capability.CLIENT_TRANSACTIONS;
         // flag |= ServerDefs.CLIENT_RESERVED;
-        flag |= Capabilitie.CLIENT_SECURE_CONNECTION;
+        flag |= Capability.CLIENT_SECURE_CONNECTION;
         return flag;
     }
 }
