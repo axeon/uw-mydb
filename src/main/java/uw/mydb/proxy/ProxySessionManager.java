@@ -12,6 +12,15 @@ public class ProxySessionManager {
     private static ConcurrentHashMap<String, ProxyMysqlSession> map = new ConcurrentHashMap();
 
     /**
+     * 获得在线计数。
+     *
+     * @return
+     */
+    public static int getCount() {
+        return map.size();
+    }
+
+    /**
      * 增加一个session。
      *
      * @param key

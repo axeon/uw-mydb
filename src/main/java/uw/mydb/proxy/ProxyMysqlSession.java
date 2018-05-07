@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import uw.mydb.conf.GlobalConstants;
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.conf.MydbConfigManager;
-import uw.mydb.metric.MydbStats;
+import uw.mydb.metric.StatsFactory;
 import uw.mydb.mysql.MySqlGroupManager;
 import uw.mydb.mysql.MySqlGroupService;
 import uw.mydb.mysql.MySqlSession;
@@ -53,29 +53,37 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     private static MydbConfig config = MydbConfigManager.getConfig();
 
     /**
-     * mydb统计信息。
-     */
-    private static MydbStats mydbStats = new MydbStats();
-    /**
      * 数据行计数。
      */
-    protected int dataRowsCount;
+    private int dataRowsCount;
+
     /**
      * 受影响行计数。
      */
-    protected int affectRowsCount;
+    private int affectRowsCount;
     /**
      * 执行消耗时间。
      */
-    protected long exeTime;
+    private long exeTime;
     /**
      * 发送字节数。
      */
-    protected long sendBytes;
+    private long sendBytes;
     /**
      * 接收字节数。
      */
-    protected long recvBytes;
+    private long recvBytes;
+
+    /**
+     * 是否是只读sql
+     */
+    private boolean isMasterSql = false;
+
+    /**
+     * 是否执行失败了
+     */
+    private boolean isExeSuccess = true;
+
     /**
      * 是否已登录。
      */
@@ -131,7 +139,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     private ThreadPoolExecutor multiNodeExecutor = new ThreadPoolExecutor(10, 100, 20L, TimeUnit.SECONDS, new SynchronousQueue<>(),
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MutiNodeService-%d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
-    ;
+
 
     public ProxyMysqlSession(ChannelHandlerContext ctx) {
         this.ctx = ctx;
@@ -315,6 +323,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     public void receiveErrorPacket(byte packetId, ByteBuf buf) {
         recvBytes += buf.readableBytes();
         ctx.write(buf.retain());
+        isExeSuccess = false;
     }
 
     /**
@@ -426,6 +435,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             }
             MySqlSession mysqlSession = null;
             if (routeResult.isMaster()) {
+                isMasterSql = true;
                 mysqlSession = groupService.getMasterService().getSession(this);
             } else {
                 mysqlSession = groupService.getLBReadService().getSession(this);
@@ -556,6 +566,15 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         this.ctx.flush();
         //开始统计数据了。
         this.exeTime = SystemClock.now() - lastReadTime;
-
+        //开始统计。
+        StatsFactory.statsMydb(host, schema.getName(), "table", isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
+        //数据归零
+        isMasterSql = false;
+        isExeSuccess = true;
+        this.exeTime = 0;
+        this.dataRowsCount = 0;
+        this.affectRowsCount = 0;
+        this.recvBytes = 0;
+        this.sendBytes = 0;
     }
 }

@@ -1,4 +1,4 @@
-package uw.mydb.metric;
+package uw.mydb.metric.vo;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author axeon
  */
-public class BaseSqlStats {
+public class SqlStats {
 
 
     /**
