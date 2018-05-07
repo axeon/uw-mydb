@@ -1,4 +1,4 @@
-package uw.mydb.metric.vo;
+package uw.mydb.stats.vo;
 
 /**
  * mysql服务统计数据。

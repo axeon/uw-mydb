@@ -1,6 +1,7 @@
-package uw.mydb.metric;
+package uw.mydb.stats;
 
-import uw.mydb.metric.vo.SqlStatsPair;
+import uw.mydb.stats.vo.SlowSql;
+import uw.mydb.stats.vo.SqlStatsPair;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -96,6 +97,13 @@ public class StatsFactory {
         msp.addAffectRowsCount(affectRowsCount);
         msp.addSendBytes(sendBytes);
         msp.addRecvBytes(recvBytes);
+    }
+
+    /**
+     * 统计慢sql。
+     */
+    public static void statsSlowSql(String client, String schema, String sql, long exeTime, long exeDate) {
+        SlowSql slowSql = new SlowSql(client, schema, sql, exeTime, exeDate);
     }
 
 }

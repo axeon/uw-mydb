@@ -1,4 +1,4 @@
-package uw.mydb.metric.vo;
+package uw.mydb.stats.vo;
 
 import java.util.concurrent.atomic.AtomicLong;
 

@@ -1,4 +1,4 @@
-package uw.mydb.metric;
+package uw.mydb.stats;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
