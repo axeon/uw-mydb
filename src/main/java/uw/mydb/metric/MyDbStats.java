@@ -1,43 +1,25 @@
 package uw.mydb.metric;
 
-/**
- * mysql服务统计数据。
- */
-public class MyDbStats {
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class MyDbStats extends BaseSqlStats {
 
     /**
      * 所有连接数。
      */
-    protected volatile int totalConnections;
+    protected AtomicInteger totalConnections = new AtomicInteger();
 
-    /**
-     * 请求sql执行次数。
-     */
-    protected volatile int sqlCount;
+    public long getTotalConnections() {
+        return totalConnections.get();
+    }
 
-    /**
-     * 执行成功次数。
-     */
-    protected volatile int exeSuccessCount;
+    public void setTotalConnections(int totalConnections) {
+        this.totalConnections.set(totalConnections);
+    }
 
-    /**
-     * 执行失败次数。
-     */
-    protected volatile int exeFailureCount;
+    public long getAndClearTotalConnections() {
+        return totalConnections.getAndSet(0);
+    }
 
-    /**
-     * 执行消耗时间。
-     */
-    protected volatile int exeTime;
-
-    /**
-     * 发送字节数。
-     */
-    protected volatile long sendBytes;
-
-    /**
-     * 接收字节数。
-     */
-    protected volatile long recvBytes;
 
 }
