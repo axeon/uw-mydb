@@ -1,4 +1,4 @@
-package uw.mydb.route.database;
+package uw.mydb.route.algorithm;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -11,9 +11,9 @@ import uw.mydb.route.RouteAlgorithm;
  *
  * @author axeon
  */
-public class RouteByHash extends RouteAlgorithm {
+public class RouteDatabaseByHash extends RouteAlgorithm {
 
-    private static final Logger logger = LoggerFactory.getLogger(RouteByHash.class);
+    private static final Logger logger = LoggerFactory.getLogger(RouteDatabaseByHash.class);
 
     private HashFunction hashFunction;
 

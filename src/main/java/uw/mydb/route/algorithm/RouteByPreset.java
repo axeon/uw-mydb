@@ -1,4 +1,4 @@
-package uw.mydb.route.database;
+package uw.mydb.route.algorithm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 根据预设信息设置表路由，此算法一般建立放在分库算法的最后，它会覆盖之前的配置。
+ * 根据预设信息设置表路由，此算法一般建立放在分表算法的最后，它会覆盖之前的配置。
  * params：key=routeKey，value="mysqlGroup.database"
  *
  * @author axeon

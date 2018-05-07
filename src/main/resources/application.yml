@@ -40,7 +40,7 @@ uw:
           - mysql-group: local-db
             db-config: [saas_$1-2]
         algorithms:
-          - algorithm: uw.mydb.route.database.RouteByRange
+          - algorithm: uw.mydb.route.algorithm.RouteDatabaseByRange
             params: {start: 10000, range: 1000}
             route-key: mch_id
       saas-cust-date:
@@ -48,12 +48,12 @@ uw:
           - mysql-group: local-db
             db-config: [saas_$1-10,saas_12]
         algorithms:
-          - algorithm: uw.mydb.route.database.RouteByRange
+          - algorithm: uw.mydb.route.algorithm.RouteDatabaseByRange
             params: {start: 10000, range: 1000}
             route-key: mch_id
-          - algorithm: uw.mydb.route.database.RouteByPreset
+          - algorithm: uw.mydb.route.algorithm.RouteByPreset
             params: {"10000": my.saas_big }
             route-key: mch_id
-          - algorithm: uw.mydb.route.table.RouteByDate
+          - algorithm: uw.mydb.route.algorithm.RouteTableByDate
             params: {"format-pattern": "yyyyMMdd" }
             route-key: create_date

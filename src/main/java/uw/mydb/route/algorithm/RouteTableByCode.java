@@ -1,4 +1,4 @@
-package uw.mydb.route.table;
+package uw.mydb.route.algorithm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +18,9 @@ import java.util.Map;
  *
  * @author axeon
  */
-public class RouteByCode extends RouteAlgorithm {
+public class RouteTableByCode extends RouteAlgorithm {
 
-    private static final Logger logger = LoggerFactory.getLogger(RouteByCode.class);
+    private static final Logger logger = LoggerFactory.getLogger(RouteTableByCode.class);
 
 
     /**

@@ -1,4 +1,4 @@
-package uw.mydb.route.table;
+package uw.mydb.route.algorithm;
 
 import uw.mydb.route.RouteAlgorithm;
 
@@ -14,7 +14,7 @@ import java.util.Map;
  *
  * @author axeon
  */
-public class RouteByDate extends RouteAlgorithm {
+public class RouteTableByDate extends RouteAlgorithm {
 
     /**
      * 日期数据格式。

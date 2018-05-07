@@ -181,9 +181,11 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         exeCount++;
         exeTime += (now - this.lastAccess);
         this.lastAccess = now;
+        //先归还链接
+        this.mysqlService.requiteSession(this);
+        //再执行解绑
         this.sessionCallback.unbind();
         this.sessionCallback = null;
-        this.mysqlService.requiteSession(this);
     }
 
     /**

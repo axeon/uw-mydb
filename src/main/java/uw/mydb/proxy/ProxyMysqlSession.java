@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import uw.mydb.conf.GlobalConstants;
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.conf.MydbConfigManager;
+import uw.mydb.metric.MydbStats;
 import uw.mydb.mysql.MySqlGroupManager;
 import uw.mydb.mysql.MySqlGroupService;
 import uw.mydb.mysql.MySqlSession;
@@ -52,60 +53,78 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     private static MydbConfig config = MydbConfigManager.getConfig();
 
     /**
+     * mydb统计信息。
+     */
+    private static MydbStats mydbStats = new MydbStats();
+    /**
+     * 数据行计数。
+     */
+    protected int dataRowsCount;
+    /**
+     * 受影响行计数。
+     */
+    protected int affectRowsCount;
+    /**
+     * 执行消耗时间。
+     */
+    protected long exeTime;
+    /**
+     * 发送字节数。
+     */
+    protected long sendBytes;
+    /**
+     * 接收字节数。
+     */
+    protected long recvBytes;
+    /**
      * 是否已登录。
      */
     private boolean isLogon;
-
     /**
      * 绑定的channel
      */
     private ChannelHandlerContext ctx;
-
     /**
      * session Id
      */
     private long id;
-
     /**
      * 用户名
      */
     private String user;
-
     /**
      * 连接的主机。
      */
     private String host;
-
     /**
      * 连接的端口。
      */
     private int port;
-
     /**
      * 连接的schema。
      */
     private MydbConfig.SchemaConfig schema;
-
     /**
      * 字符集
      */
     private String charset;
-
     /**
      * 字符集索引
      */
     private int charsetIndex;
-
     /**
      * auth验证的seed
      */
     private byte[] authSeed;
-
     /**
      * 上次访问时间
      */
     private long lastAccess;
 
+    /**
+     * 上次读取时间
+     */
+    private long lastReadTime;
 
     /**
      * 线程池。
@@ -279,6 +298,11 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveOkPacket(byte packetId, ByteBuf buf) {
+        recvBytes += buf.readableBytes();
+        OKPacket okPacket = new OKPacket();
+        okPacket.read(buf);
+        affectRowsCount += okPacket.affectedRows;
+        buf.resetReaderIndex();
         ctx.write(buf.retain());
     }
 
@@ -289,6 +313,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveErrorPacket(byte packetId, ByteBuf buf) {
+        recvBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -299,6 +324,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
+        recvBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -309,6 +335,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
+        recvBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -319,6 +346,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
+        recvBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -329,6 +357,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
+        recvBytes += buf.readableBytes();
+        dataRowsCount++;
         ctx.write(buf.retain());
     }
 
@@ -339,6 +369,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
+        recvBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -362,6 +393,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param buf
      */
     public void query(ChannelHandlerContext ctx, ByteBuf buf) {
+        sendBytes += buf.readableBytes();
+        lastReadTime = SystemClock.now();
         //如果schema没有任何表分区定义，则直接转发到默认库。
         //读取sql
         CommandPacket cmd = new CommandPacket();
@@ -493,7 +526,6 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         ctx.flush();
     }
 
-
     /**
      * 错误提示。
      *
@@ -522,5 +554,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     @Override
     public void unbind() {
         this.ctx.flush();
+        //开始统计数据了。
+        this.exeTime = SystemClock.now() - lastReadTime;
+
     }
 }

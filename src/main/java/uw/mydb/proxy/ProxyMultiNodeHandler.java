@@ -220,6 +220,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
         } catch (InterruptedException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+        //如下代码必须要异步线程中跑，否则会出问题。
         //开始返回最后的包。
         if (packetStep.get() > PACKET_STEP_INIT) {
             //输出eof包。

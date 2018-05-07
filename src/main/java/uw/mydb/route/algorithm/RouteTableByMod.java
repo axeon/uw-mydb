@@ -1,4 +1,4 @@
-package uw.mydb.route.table;
+package uw.mydb.route.algorithm;
 
 import uw.mydb.route.RouteAlgorithm;
 
@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author axeon
  */
-public class RouteByMod extends RouteAlgorithm {
+public class RouteTableByMod extends RouteAlgorithm {
 
     /**
      * 预设的表列表。

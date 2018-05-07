@@ -1,4 +1,4 @@
-package uw.mydb.route.database;
+package uw.mydb.route.algorithm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +13,9 @@ import java.util.Map;
  *
  * @author axeon
  */
-public class RouteByRange extends RouteAlgorithm {
+public class RouteDatabaseByRange extends RouteAlgorithm {
 
-    private static final Logger logger = LoggerFactory.getLogger(RouteByRange.class);
+    private static final Logger logger = LoggerFactory.getLogger(RouteDatabaseByRange.class);
 
     /**
      * 起始计算位置。有些人喜欢从10000开始计数。

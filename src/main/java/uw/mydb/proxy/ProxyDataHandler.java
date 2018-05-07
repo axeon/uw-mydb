@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 public class ProxyDataHandler extends ChannelInboundHandlerAdapter {
 
     public static final AttributeKey<ProxyMysqlSession> MYDB_SESSION = AttributeKey.valueOf("mydb.session");
+
     private static final Logger logger = LoggerFactory.getLogger(ProxyDataHandler.class);
 
     /**

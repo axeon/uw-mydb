@@ -17,6 +17,13 @@ public class MydbConfig {
      */
     private ServerConfig server = new ServerConfig();
 
+
+    /**
+     * 监控服务。
+     */
+    private MetricService metricService = new MetricService();
+
+
     /**
      * 用户账号设置
      */
@@ -43,6 +50,14 @@ public class MydbConfig {
 
     public void setServer(ServerConfig server) {
         this.server = server;
+    }
+
+    public MetricService getMetricService() {
+        return metricService;
+    }
+
+    public void setMetricService(MetricService metricService) {
+        this.metricService = metricService;
     }
 
     public Map<String, UserConfig> getUsers() {
@@ -673,6 +688,68 @@ public class MydbConfig {
 
         public void setDbConfig(List<String> dbConfig) {
             this.dbConfig = dbConfig;
+        }
+    }
+
+
+    /**
+     * 监控信息配置
+     *
+     * @author axeon
+     */
+    public static class MetricService {
+
+
+        /**
+         * influxdb主机
+         */
+        private String host;
+
+        /**
+         * influxdb用户名
+         */
+        private String username = "root";
+
+        /**
+         * influx密码
+         */
+        private String password = "root";
+
+        /**
+         * influx数据库
+         */
+        private String database = "mydb";
+
+        public String getHost() {
+            return host;
+        }
+
+        public void setHost(String host) {
+            this.host = host;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getDatabase() {
+            return database;
+        }
+
+        public void setDatabase(String database) {
+            this.database = database;
         }
     }
 
