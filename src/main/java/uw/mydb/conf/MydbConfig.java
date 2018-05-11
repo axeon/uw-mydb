@@ -21,7 +21,7 @@ public class MydbConfig {
     /**
      * 监控服务。
      */
-    private MetricService metricService = new MetricService();
+    private Stats stats = new Stats();
 
 
     /**
@@ -52,12 +52,12 @@ public class MydbConfig {
         this.server = server;
     }
 
-    public MetricService getMetricService() {
-        return metricService;
+    public Stats getStats() {
+        return stats;
     }
 
-    public void setMetricService(MetricService metricService) {
-        this.metricService = metricService;
+    public void setStats(Stats stats) {
+        this.stats = stats;
     }
 
     public Map<String, UserConfig> getUsers() {
@@ -111,6 +111,90 @@ public class MydbConfig {
          * 匹配全部值，如果没有匹配值，则匹配所有数值。
          */
         MATCH_ALL;
+    }
+
+    /**
+     * 统计信息。
+     */
+    public static class Stats {
+
+        /**
+         * 服务器的统计。
+         */
+        private boolean serverMetrics;
+
+        /**
+         * 客户端统计。
+         */
+        private boolean clientMetrics;
+
+        /**
+         * schema统计。
+         */
+        private boolean schemaMetrics;
+
+        /**
+         * mysql统计.
+         */
+        private boolean mysqlMetrics;
+
+        /**
+         * slowQuery超时毫秒数。
+         */
+        private long slowQueryTimeout;
+
+        /**
+         * metric服务配置。
+         */
+        private MetricService metricService = new MetricService();
+
+        public boolean isServerMetrics() {
+            return serverMetrics;
+        }
+
+        public void setServerMetrics(boolean serverMetrics) {
+            this.serverMetrics = serverMetrics;
+        }
+
+        public boolean isClientMetrics() {
+            return clientMetrics;
+        }
+
+        public void setClientMetrics(boolean clientMetrics) {
+            this.clientMetrics = clientMetrics;
+        }
+
+        public boolean isSchemaMetrics() {
+            return schemaMetrics;
+        }
+
+        public void setSchemaMetrics(boolean schemaMetrics) {
+            this.schemaMetrics = schemaMetrics;
+        }
+
+        public boolean isMysqlMetrics() {
+            return mysqlMetrics;
+        }
+
+        public void setMysqlMetrics(boolean mysqlMetrics) {
+            this.mysqlMetrics = mysqlMetrics;
+        }
+
+        public long getSlowQueryTimeout() {
+            return slowQueryTimeout;
+        }
+
+        public void setSlowQueryTimeout(long slowQueryTimeout) {
+            this.slowQueryTimeout = slowQueryTimeout;
+        }
+
+        public MetricService getMetricService() {
+            return metricService;
+        }
+
+        public void setMetricService(MetricService metricService) {
+            this.metricService = metricService;
+        }
     }
 
     /**
@@ -699,7 +783,6 @@ public class MydbConfig {
      */
     public static class MetricService {
 
-
         /**
          * influxdb主机
          */
@@ -708,17 +791,26 @@ public class MydbConfig {
         /**
          * influxdb用户名
          */
-        private String username = "root";
+        private String username;
 
         /**
          * influx密码
          */
-        private String password = "root";
+        private String password;
 
         /**
          * influx数据库
          */
-        private String database = "mydb";
+        private String database;
+
+        /**
+         * 检测是否启用。
+         *
+         * @return
+         */
+        public boolean isEnabled() {
+            return host != null;
+        }
 
         public String getHost() {
             return host;

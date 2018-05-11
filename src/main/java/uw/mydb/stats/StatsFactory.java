@@ -1,5 +1,7 @@
 package uw.mydb.stats;
 
+import uw.mydb.conf.MydbConfig;
+import uw.mydb.conf.MydbConfigManager;
 import uw.mydb.stats.vo.SlowSql;
 import uw.mydb.stats.vo.SqlStatsPair;
 
@@ -13,7 +15,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class StatsFactory {
 
-    private static SqlStatsPair myDbStats = new SqlStatsPair();
+    private static MydbConfig.Stats config = MydbConfigManager.getConfig().getStats();
+
+    /**
+     * 服务器统计表。
+     */
+    private static SqlStatsPair myDbStats = new SqlStatsPair(config.isServerMetrics(), config.getMetricService().isEnabled());
 
     /**
      * 基于客户端的统计表。
@@ -35,9 +42,9 @@ public class StatsFactory {
      */
     public static void statsMydb(String clientIp, String schema, String table, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
         //获得客户端统计表
-        SqlStatsPair csp = clientStatsMap.putIfAbsent(clientIp, new SqlStatsPair());
+        SqlStatsPair csp = clientStatsMap.putIfAbsent(clientIp, new SqlStatsPair(config.isClientMetrics(), config.getMetricService().isEnabled()));
         //获得schema统计表。
-        SqlStatsPair ssp = schemaStatsMap.putIfAbsent(new StringBuilder().append(schema).append('.').append(table).toString(), new SqlStatsPair());
+        SqlStatsPair ssp = schemaStatsMap.putIfAbsent(new StringBuilder().append(schema).append('.').append(table).toString(), new SqlStatsPair(config.isSchemaMetrics(), config.getMetricService().isEnabled()));
 
         if (isMasterSql) {
             myDbStats.addSqlWriteCount(1);
@@ -81,7 +88,7 @@ public class StatsFactory {
      */
     public static void statsMysql(String mysqlGroup, String mysql, String database, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
         //获得mysql统计表
-        SqlStatsPair msp = mysqlStatsMap.putIfAbsent(new StringBuilder().append(mysqlGroup).append('#').append(mysql).toString(), new SqlStatsPair());
+        SqlStatsPair msp = mysqlStatsMap.putIfAbsent(new StringBuilder().append(mysqlGroup).append('#').append(mysql).toString(), new SqlStatsPair(config.isMysqlMetrics(), config.getMetricService().isEnabled()));
         if (isMasterSql) {
             msp.addSqlWriteCount(1);
         } else {
@@ -103,7 +110,9 @@ public class StatsFactory {
      * 统计慢sql。
      */
     public static void statsSlowSql(String client, String schema, String sql, long exeTime, long exeDate) {
-        SlowSql slowSql = new SlowSql(client, schema, sql, exeTime, exeDate);
+        if (exeTime > config.getSlowQueryTimeout()) {
+            SlowSql slowSql = new SlowSql(client, schema, sql, exeTime, exeDate);
+        }
     }
 
 }

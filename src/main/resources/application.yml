@@ -1,5 +1,16 @@
 uw:
   mydb:
+    stats:
+      server-metrics: true
+      schema-metrics: true
+      client-metrics: true
+      mysql-metrics: true
+      slow-query-timeout: 3000
+      metric-service:
+        host:
+        username:
+        password:
+        database:
     server:
       ip: 0.0.0.0
       port: 3309

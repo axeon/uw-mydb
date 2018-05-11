@@ -8,133 +8,243 @@ package uw.mydb.stats.vo;
  */
 public class SqlStatsPair {
 
-    public SqlStats sqlStats = new SqlStats();
+    public SqlStats sqlStats;
 
-    public SqlStats sqlStatsTemp = new SqlStats();
+    public SqlStats sqlStatsMetrics;
 
+    public SqlStatsPair(boolean enableStats, boolean enableMetrics) {
+        if (enableStats) {
+            sqlStats = new SqlStats();
+            if (enableMetrics) {
+                sqlStatsMetrics = new SqlStats();
+            }
+        }
+    }
 
     public void addSqlReadCount(long sqlCount) {
-        sqlStats.addSqlReadCount(sqlCount);
-        sqlStatsTemp.addSqlReadCount(sqlCount);
+        if (sqlStats != null) {
+            sqlStats.addSqlReadCount(sqlCount);
+            if (sqlStatsMetrics != null) {
+                sqlStatsMetrics.addSqlReadCount(sqlCount);
+            }
+        }
     }
 
     public void addSqlWriteCount(long sqlCount) {
-        sqlStats.addSqlWriteCount(sqlCount);
-        sqlStatsTemp.addSqlWriteCount(sqlCount);
+        if (sqlStats != null) {
+            sqlStats.addSqlWriteCount(sqlCount);
 
+            if (sqlStatsMetrics != null) {
+                sqlStatsMetrics.addSqlWriteCount(sqlCount);
+            }
+        }
     }
 
     public void addExeSuccessCount(long exeSuccessCount) {
-        sqlStats.addExeSuccessCount(exeSuccessCount);
-        sqlStatsTemp.addExeSuccessCount(exeSuccessCount);
+        if (sqlStats != null) {
+            sqlStats.addExeSuccessCount(exeSuccessCount);
 
+            if (sqlStatsMetrics != null) {
+                sqlStatsMetrics.addExeSuccessCount(exeSuccessCount);
+            }
+        }
     }
 
     public void addExeFailureCount(long exeFailureCount) {
-        sqlStats.addExeFailureCount(exeFailureCount);
-        sqlStatsTemp.addExeFailureCount(exeFailureCount);
-
+        if (sqlStats != null) {
+            sqlStats.addExeFailureCount(exeFailureCount);
+            if (sqlStatsMetrics != null) {
+                sqlStatsMetrics.addExeFailureCount(exeFailureCount);
+            }
+        }
     }
 
     public void addDataRowsCount(long dataRowsCount) {
-        sqlStats.addDataRowsCount(dataRowsCount);
-        sqlStatsTemp.addDataRowsCount(dataRowsCount);
-
+        if (sqlStats != null) {
+            sqlStats.addDataRowsCount(dataRowsCount);
+            if (sqlStatsMetrics != null) {
+                sqlStatsMetrics.addDataRowsCount(dataRowsCount);
+            }
+        }
     }
 
     public void addAffectRowsCount(long affectRowsCount) {
-        sqlStats.addAffectRowsCount(affectRowsCount);
-        sqlStatsTemp.addAffectRowsCount(affectRowsCount);
-
+        if (sqlStats != null) {
+            sqlStats.addAffectRowsCount(affectRowsCount);
+            if (sqlStatsMetrics != null) {
+                sqlStatsMetrics.addAffectRowsCount(affectRowsCount);
+            }
+        }
     }
 
     public void addExeTime(long exeTime) {
-        sqlStats.addExeTime(exeTime);
-        sqlStatsTemp.addExeTime(exeTime);
-
+        if (sqlStats != null) {
+            sqlStats.addExeTime(exeTime);
+            if (sqlStatsMetrics != null) {
+                sqlStatsMetrics.addExeTime(exeTime);
+            }
+        }
     }
 
     public void addSendBytes(long sendBytes) {
-        sqlStats.addSendBytes(sendBytes);
-        sqlStatsTemp.addSendBytes(sendBytes);
-
+        if (sqlStats != null) {
+            sqlStats.addSendBytes(sendBytes);
+            if (sqlStatsMetrics != null) {
+                sqlStatsMetrics.addSendBytes(sendBytes);
+            }
+        }
     }
 
     public void addRecvBytes(long recvBytes) {
-        sqlStats.addRecvBytes(recvBytes);
-        sqlStats.addRecvBytes(recvBytes);
-
+        if (sqlStats != null) {
+            sqlStats.addRecvBytes(recvBytes);
+            if (sqlStatsMetrics != null) {
+                sqlStats.addRecvBytes(recvBytes);
+            }
+        }
     }
 
     public long getSqlReadCount() {
-        return sqlStats.getSqlReadCount();
+        if (sqlStats != null) {
+            return sqlStats.getSqlReadCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearSqlReadCount() {
-        return sqlStatsTemp.getAndClearSqlReadCount();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearSqlReadCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getSqlWriteCount() {
-        return sqlStats.getSqlWriteCount();
+        if (sqlStats != null) {
+            return sqlStats.getSqlWriteCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearSqlWriteCount() {
-        return sqlStatsTemp.getAndClearSqlWriteCount();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearSqlWriteCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getDataRowsCount() {
-        return sqlStats.getDataRowsCount();
+        if (sqlStats != null) {
+            return sqlStats.getDataRowsCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearDataRowsCount() {
-        return sqlStatsTemp.getAndClearDataRowsCount();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearDataRowsCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getAffectRowsCount() {
-        return sqlStats.getAffectRowsCount();
+        if (sqlStats != null) {
+            return sqlStats.getAffectRowsCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearAffectRowsCount() {
-        return sqlStatsTemp.getAndClearAffectRowsCount();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearAffectRowsCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getExeSuccessCount() {
-        return sqlStats.getExeSuccessCount();
+        if (sqlStats != null) {
+            return sqlStats.getExeSuccessCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearExeSuccessCount() {
-        return sqlStatsTemp.getAndClearExeSuccessCount();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearExeSuccessCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearExeFailureCount() {
-        return sqlStatsTemp.getAndClearExeFailureCount();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearExeFailureCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getExeFailureCount() {
-        return sqlStats.getExeFailureCount();
+        if (sqlStats != null) {
+            return sqlStats.getExeFailureCount();
+        } else {
+            return -1;
+        }
     }
 
     public long getExeTime() {
-        return sqlStats.getExeTime();
+        if (sqlStats != null) {
+            return sqlStats.getExeTime();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearExeTime() {
-        return sqlStatsTemp.getAndClearExeTime();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearExeTime();
+        } else {
+            return -1;
+        }
     }
 
     public long getSendBytes() {
-        return sqlStats.getSendBytes();
+        if (sqlStats != null) {
+            return sqlStats.getSendBytes();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearSendBytes() {
-        return sqlStatsTemp.getAndClearSendBytes();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearSendBytes();
+        } else {
+            return -1;
+        }
     }
 
     public long getRecvBytes() {
-        return sqlStats.getRecvBytes();
+        if (sqlStats != null) {
+            return sqlStats.getRecvBytes();
+        } else {
+            return -1;
+        }
     }
 
     public long getAndClearRecvBytes() {
-        return sqlStatsTemp.getAndClearRecvBytes();
+        if (sqlStatsMetrics != null) {
+            return sqlStatsMetrics.getAndClearRecvBytes();
+        } else {
+            return -1;
+        }
     }
 }
