@@ -105,7 +105,7 @@ public class SqlParser {
         this.schema = proxySession.getSchema();
         this.sql = sql;
         this.lexer = new Lexer(sql, false, true);
-        this.parseResult = new SqlParseResult(sql);
+        this.parseResult = new SqlParseResult(schema.getName(), sql);
     }
 
 
@@ -119,7 +119,7 @@ public class SqlParser {
         this.schema = schema;
         this.sql = sql;
         this.lexer = new Lexer(sql, false, true);
-        this.parseResult = new SqlParseResult(sql);
+        this.parseResult = new SqlParseResult(schema.getName(), sql);
     }
 
     /**
@@ -186,6 +186,10 @@ public class SqlParser {
                     }
                     break;
             }
+        }
+        //设置table
+        if (this.mainRouteData != null && this.mainRouteData.tableConfig != null) {
+            this.parseResult.setTable(this.mainRouteData.tableConfig.getName());
         }
 
         if (!parseResult.hasError()) {
@@ -1007,6 +1011,7 @@ public class SqlParser {
                     sqlInfo.appendSql(ri.getDatabase()).appendSql(".").appendSql(ri.getTable());
                     sqlInfo.setMysqlGroup(ri.getMysqlGroup());
                     sqlInfo.setDatabase(ri.getDatabase());
+                    sqlInfo.setTable(ri.getTable());
                 } else if (i < subSqls.size() - 1) {
                     //开始处理从表路由。
                     if (tableList != null) {
@@ -1076,6 +1081,7 @@ public class SqlParser {
                 if (isMain) {
                     si.setMysqlGroup(ri.getMysqlGroup());
                     si.setDatabase(ri.getDatabase());
+                    si.setTable(ri.getTable());
                 }
             }
         } else {
@@ -1087,10 +1093,12 @@ public class SqlParser {
                     sqlInfo1.appendSql(si.getNewSql());
                     sqlInfo1.setMysqlGroup(si.getMysqlGroup());
                     sqlInfo1.setDatabase(si.getDatabase());
+                    sqlInfo1.setTable(si.getTable());
                     sqlInfo1.appendSql(ri.checkValid() ? ri.getDatabase() : sqlInfo1.getDatabase()).appendSql(".").appendSql(ri.getTable());
                     if (isMain) {
                         sqlInfo1.setMysqlGroup(ri.getMysqlGroup());
                         sqlInfo1.setDatabase(ri.getDatabase());
+                        sqlInfo1.setTable(ri.getTable());
                     }
                     sbxs.add(sqlInfo1);
                 }

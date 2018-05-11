@@ -61,14 +61,17 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * 受影响行计数。
      */
     private int affectRowsCount;
+
     /**
      * 执行消耗时间。
      */
     private long exeTime;
+
     /**
      * 发送字节数。
      */
     private long sendBytes;
+
     /**
      * 接收字节数。
      */
@@ -88,42 +91,52 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * 是否已登录。
      */
     private boolean isLogon;
+
     /**
      * 绑定的channel
      */
     private ChannelHandlerContext ctx;
+
     /**
      * session Id
      */
     private long id;
+
     /**
      * 用户名
      */
     private String user;
+
     /**
      * 连接的主机。
      */
     private String host;
+
     /**
      * 连接的端口。
      */
     private int port;
+
     /**
      * 连接的schema。
      */
     private MydbConfig.SchemaConfig schema;
+
     /**
      * 字符集
      */
     private String charset;
+
     /**
      * 字符集索引
      */
     private int charsetIndex;
+
     /**
      * auth验证的seed
      */
     private byte[] authSeed;
+
     /**
      * 上次访问时间
      */
@@ -135,9 +148,14 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     private long lastReadTime;
 
     /**
-     * 线程池。
+     * sql解析结果。
      */
-    private ThreadPoolExecutor multiNodeExecutor = new ThreadPoolExecutor(10, 100, 20L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+    private SqlParseResult routeResult;
+
+    /**
+     * 多节点执行的异步线程池。
+     */
+    private ThreadPoolExecutor multiNodeExecutor = new ThreadPoolExecutor(10, 1000, 20L, TimeUnit.SECONDS, new SynchronousQueue<>(),
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MutiNodeService-%d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
 
 
@@ -193,7 +211,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         if (newSchema != null) {
             this.schema = newSchema;
             MySqlGroupService groupService = MySqlGroupManager.getMysqlGroupService(this.schema.getBaseNode());
-            groupService.getMasterService().getSession(this).exeCommand(CommandPacket.build("use " + this.schema.getName()));
+            groupService.getMasterService().getSession(this).exeCommand(false, CommandPacket.build("use " + this.schema.getName()));
         } else {
             //报错，找不到这个schema。
             failMessage(ErrorCode.ER_NO_DB_ERROR, "No database!");
@@ -306,7 +324,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveOkPacket(byte packetId, ByteBuf buf) {
-        recvBytes += buf.readableBytes();
+        sendBytes += buf.readableBytes();
         OKPacket okPacket = new OKPacket();
         okPacket.read(buf);
         affectRowsCount += okPacket.affectedRows;
@@ -321,7 +339,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveErrorPacket(byte packetId, ByteBuf buf) {
-        recvBytes += buf.readableBytes();
+        sendBytes += buf.readableBytes();
         ctx.write(buf.retain());
         isExeSuccess = false;
     }
@@ -333,7 +351,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveResultSetHeaderPacket(byte packetId, ByteBuf buf) {
-        recvBytes += buf.readableBytes();
+        sendBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -344,7 +362,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveFieldDataPacket(byte packetId, ByteBuf buf) {
-        recvBytes += buf.readableBytes();
+        sendBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -355,7 +373,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
-        recvBytes += buf.readableBytes();
+        sendBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -366,7 +384,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveRowDataPacket(byte packetId, ByteBuf buf) {
-        recvBytes += buf.readableBytes();
+        sendBytes += buf.readableBytes();
         dataRowsCount++;
         ctx.write(buf.retain());
     }
@@ -378,7 +396,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
-        recvBytes += buf.readableBytes();
+        sendBytes += buf.readableBytes();
         ctx.write(buf.retain());
     }
 
@@ -402,7 +420,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param buf
      */
     public void query(ChannelHandlerContext ctx, ByteBuf buf) {
-        sendBytes += buf.readableBytes();
+        recvBytes += buf.readableBytes();
         lastReadTime = SystemClock.now();
         //如果schema没有任何表分区定义，则直接转发到默认库。
         //读取sql
@@ -415,7 +433,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         //进行sql解析
         //根据解析结果判定，当前支持1.单实例执行；2.多实例执行
         SqlParser parser = new SqlParser(this, sql);
-        SqlParseResult routeResult = parser.parse();
+        routeResult = parser.parse();
         //sql解析后，routeResult=null的，可能已经在parser里处理过了。
         if (routeResult.hasError()) {
             //errorcode>0的，发送错误信息。
@@ -445,7 +463,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
                 logger.warn("无法找到合适的mysqlSession!");
                 return;
             }
-            mysqlSession.exeCommand(routeResult.getSqlInfo().genPacket());
+            mysqlSession.exeCommand(routeResult.isMaster(), routeResult.getSqlInfo());
         } else {
             //多实例执行使用CountDownLatch同步返回所有结果后，再执行转发，可能会导致阻塞。
             multiNodeExecutor.submit(new ProxyMultiNodeHandler(this.ctx, routeResult));
@@ -567,7 +585,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         //开始统计数据了。
         this.exeTime = SystemClock.now() - lastReadTime;
         //开始统计。
-        StatsFactory.statsMydb(host, schema.getName(), "table", isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
+        StatsFactory.statsMydb(host, schema.getName(), routeResult == null ? "" : routeResult.getTable(), isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
         //数据归零
         isMasterSql = false;
         isExeSuccess = true;

@@ -14,6 +14,8 @@ public class ExeSqlTask extends LocalTaskAdapter<Long> {
 
     public ExeSqlTask(String mysqlGroupName, LocalCmdCallback<Long> localCmdCallback) {
         super(mysqlGroupName, localCmdCallback);
+        //写指令，在这里标识出来
+        this.isMaster = true;
     }
 
     /**

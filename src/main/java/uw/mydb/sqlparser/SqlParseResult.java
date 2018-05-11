@@ -15,11 +15,20 @@ public class SqlParseResult {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SqlParseResult.class);
 
-
     /**
      * 原始的sql语句。
      */
     private String sql;
+
+    /**
+     * schema名。
+     */
+    private String schema;
+
+    /**
+     * 表名。
+     */
+    private String table;
 
     /**
      * 错误编码。
@@ -51,7 +60,8 @@ public class SqlParseResult {
      */
     private ArrayList<SqlInfo> sqlInfos = null;
 
-    public SqlParseResult(String sql) {
+    public SqlParseResult(String schema, String sql) {
+        this.schema = schema;
         this.sql = sql;
     }
 
@@ -62,6 +72,18 @@ public class SqlParseResult {
      */
     public String getSql() {
         return sql;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public String getTable() {
+        return table;
+    }
+
+    public void setTable(String table) {
+        this.table = table;
     }
 
     /**
@@ -171,6 +193,11 @@ public class SqlParseResult {
         private String database;
 
         /**
+         * 主表名。
+         */
+        private String table;
+
+        /**
          * sql信息。
          */
         private StringBuilder newSqlBuf;
@@ -202,6 +229,14 @@ public class SqlParseResult {
 
         public void setDatabase(String database) {
             this.database = database;
+        }
+
+        public String getTable() {
+            return table;
+        }
+
+        public void setTable(String table) {
+            this.table = table;
         }
 
         public String getNewSql() {

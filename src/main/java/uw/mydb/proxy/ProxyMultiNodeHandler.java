@@ -84,6 +84,35 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     private SqlParseResult routeResult;
 
+    /**
+     * 数据行计数。
+     */
+    private AtomicLong dataRowsCount = new AtomicLong();
+
+    /**
+     * 执行消耗时间。
+     */
+    private long exeTime;
+    /**
+     * 发送字节数。
+     */
+    private AtomicLong sendBytes = new AtomicLong();
+    /**
+     * 接收字节数。
+     */
+    private long recvBytes;
+
+    /**
+     * 是否是只读sql
+     */
+    private boolean isMasterSql = false;
+
+    /**
+     * 是否执行失败了
+     */
+    private boolean isExeSuccess = true;
+
+
     public ProxyMultiNodeHandler(ChannelHandlerContext ctx, SqlParseResult routeResult) {
         this.ctx = ctx;
         this.routeResult = routeResult;
@@ -131,6 +160,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
             return;
         }
         if (packetSeq.compareAndSet(0, packetId)) {
+            sendBytes.addAndGet(buf.readableBytes());
             ctx.write(buf.retain());
         }
     }
@@ -146,6 +176,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
             return;
         }
         if (packetSeq.compareAndSet(packetId - 1, packetId)) {
+            sendBytes.addAndGet(buf.readableBytes());
             ctx.write(buf.retain());
         }
     }
@@ -158,6 +189,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
     @Override
     public synchronized void receiveFieldDataEOFPacket(byte packetId, ByteBuf buf) {
         if (packetStep.compareAndSet(PACKET_STEP_INIT, PACKET_STEP_EOF_FIELD)) {
+            sendBytes.addAndGet(buf.readableBytes());
             ctx.write(buf.retain());
             packetSeq.incrementAndGet();
         }
@@ -170,6 +202,8 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      */
     @Override
     public synchronized void receiveRowDataPacket(byte packetId, ByteBuf buf) {
+        sendBytes.addAndGet(buf.readableBytes());
+        dataRowsCount.incrementAndGet();
         packetId = (byte) (packetSeq.incrementAndGet());
         buf.setByte(3, packetId);
         ctx.write(buf.retain());
@@ -183,7 +217,6 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
     @Override
     public void receiveRowDataEOFPacket(byte packetId, ByteBuf buf) {
         //在最后汇总输出，可以不用管了。
-        ;
     }
 
     /**
@@ -196,6 +229,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
 
     @Override
     public void run() {
+
         for (SqlParseResult.SqlInfo sqlInfo : routeResult.getSqlInfos()) {
             MySqlGroupService groupService = MySqlGroupManager.getMysqlGroupService(sqlInfo.getMysqlGroup());
             if (groupService == null) {
@@ -212,7 +246,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
                 logger.warn("无法找到合适的mysqlSession!");
                 continue;
             }
-            mysqlSession.exeCommand(sqlInfo.genPacket());
+            mysqlSession.exeCommand(routeResult.isMaster(), sqlInfo);
         }
         //等待最长180s
         try {
@@ -229,6 +263,7 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
             eofPacket.warningCount = errorCount.get();
             eofPacket.status = 0x22;
             eofPacket.writeToChannel(ctx);
+            sendBytes.addAndGet(eofPacket.calcPacketSize());
         } else {
             if (affectedRows.get() > -1) {
                 //说明有ok包。
@@ -237,12 +272,15 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
                 okPacket.affectedRows = affectedRows.get();
                 okPacket.warningCount = errorCount.get();
                 okPacket.writeToChannel(ctx);
+                sendBytes.addAndGet(okPacket.calcPacketSize());
             } else {
                 //说明全部就是错误包啦，直接返回第一個error包
                 errorPacket.writeToChannel(ctx);
+                sendBytes.addAndGet(errorPacket.calcPacketSize());
+                isExeSuccess = false;
             }
         }
         ctx.flush();
-
+//        StatsFactory.statsMydb();
     }
 }

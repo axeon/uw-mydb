@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import uw.mydb.mysql.util.ConcurrentBag;
 import uw.mydb.protocol.packet.*;
 import uw.mydb.protocol.util.Capability;
+import uw.mydb.sqlparser.SqlParseResult;
+import uw.mydb.stats.StatsFactory;
 import uw.mydb.util.SecurityUtils;
 import uw.mydb.util.SystemClock;
 
@@ -85,14 +87,19 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
     private int resultStatus = RESULT_INIT;
 
     /**
-     * 执行计数。
+     * 数据行计数。
      */
-    private int exeCount;
+    private int dataRowsCount;
 
     /**
-     * 执行汇总时间。
+     * 受影响行计数。
      */
-    private int exeTime;
+    private int affectRowsCount;
+
+    /**
+     * 执行消耗时间。
+     */
+    private long exeTime;
 
     /**
      * 发送字节数。
@@ -103,6 +110,27 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * 接收字节数。
      */
     private long recvBytes;
+
+    /**
+     * 执行sql所在的数据库
+     */
+    private String database;
+
+    /**
+     * 执行sql所在的表
+     */
+    private String table;
+
+    /**
+     * 是否是只读sql
+     */
+    private boolean isMasterSql = false;
+
+    /**
+     * 是否执行失败了
+     */
+    private boolean isExeSuccess = true;
+
 
     public MySqlSession(MySqlService mysqlService, Channel channel) {
         this.mysqlService = mysqlService;
@@ -139,25 +167,32 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         return true;
     }
 
-    /**
-     * 异步执行一条sql。
-     *
-     * @param buf
-     */
-    public void exeCommand(ByteBuf buf) {
-        //标记发送字节数。
-        sendBytes += buf.readableBytes();
-        channel.writeAndFlush(buf.retain());
-    }
 
     /**
      * 异步执行一条sql。
      *
      * @param command
      */
-    public void exeCommand(CommandPacket command) {
+    public void exeCommand(boolean isMasterSql, CommandPacket command) {
+        this.isMasterSql = isMasterSql;
         ByteBuf buf = channel.alloc().buffer();
         command.write(buf);
+        //标记发送字节数。
+        sendBytes += buf.readableBytes();
+        channel.writeAndFlush(buf);
+    }
+
+    /**
+     * 异步执行一条sql。
+     *
+     * @param sqlInfo
+     */
+    public void exeCommand(boolean isMasterSql, SqlParseResult.SqlInfo sqlInfo) {
+        this.isMasterSql = isMasterSql;
+        this.database = sqlInfo.getDatabase();
+        this.table = sqlInfo.getTable();
+        ByteBuf buf = channel.alloc().buffer();
+        sqlInfo.genPacket().write(buf);
         //标记发送字节数。
         sendBytes += buf.readableBytes();
         channel.writeAndFlush(buf);
@@ -177,12 +212,12 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * 解绑。
      */
     public void unbind() {
-        long now = SystemClock.now();
-        exeCount++;
-        exeTime += (now - this.lastAccess);
-        this.lastAccess = now;
         //先归还链接
         this.mysqlService.requiteSession(this);
+        long now = SystemClock.now();
+        exeTime = (now - this.lastAccess);
+        this.lastAccess = now;
+        StatsFactory.statsMysql(mysqlService.getGroupName(), mysqlService.getName(), database, isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
         //再执行解绑
         this.sessionCallback.unbind();
         this.sessionCallback = null;
@@ -277,6 +312,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
             case MySqlPacket.PACKET_ERROR:
                 //直接转发走
                 sessionCallback.receiveErrorPacket(packetId, buf);
+                isExeSuccess = false;
                 //都报错了，直接解绑
                 unbind();
                 break;
@@ -315,6 +351,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
                     default:
                         //数据区
                         sessionCallback.receiveRowDataPacket(packetId, buf);
+                        dataRowsCount++;
                         break;
                 }
         }
@@ -322,7 +359,6 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
 
 
     /**
-     * f
      * 真正关闭连接。
      */
     public void trueClose() {

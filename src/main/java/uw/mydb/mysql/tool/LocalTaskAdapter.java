@@ -50,6 +50,11 @@ public abstract class LocalTaskAdapter<T> implements MySqlSessionCallback {
      */
     protected int errorNo;
 
+    /**
+     * 是否需要运行master上，一般都是写指令。
+     */
+    protected boolean isMaster;
+
 
     public LocalTaskAdapter(String mysqlGroupName, LocalCmdCallback<T> localCmdCallback) {
         this.mysqlSession = MySqlGroupManager.getMysqlGroupService(mysqlGroupName).getMasterService().getSession(this);
@@ -73,7 +78,7 @@ public abstract class LocalTaskAdapter<T> implements MySqlSessionCallback {
         CommandPacket cmd = new CommandPacket();
         cmd.command = MySqlPacket.CMD_QUERY;
         cmd.arg = sql.getBytes();
-        this.mysqlSession.exeCommand(cmd);
+        this.mysqlSession.exeCommand(isMaster, cmd);
     }
 
     /**

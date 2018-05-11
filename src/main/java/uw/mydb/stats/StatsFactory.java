@@ -79,7 +79,7 @@ public class StatsFactory {
     /**
      * 统计来源于mysql的数据。
      */
-    public static void statsMysql(String mysqlGroup, String mysql, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
+    public static void statsMysql(String mysqlGroup, String mysql, String database, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
         //获得mysql统计表
         SqlStatsPair msp = mysqlStatsMap.putIfAbsent(new StringBuilder().append(mysqlGroup).append('#').append(mysql).toString(), new SqlStatsPair());
         if (isMasterSql) {
