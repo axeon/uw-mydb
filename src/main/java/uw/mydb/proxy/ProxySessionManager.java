@@ -21,6 +21,15 @@ public class ProxySessionManager {
     }
 
     /**
+     * 获得map实例。
+     *
+     * @return
+     */
+    public static ConcurrentHashMap<String, ProxyMysqlSession> getMap() {
+        return map;
+    }
+
+    /**
      * 增加一个session。
      *
      * @param key

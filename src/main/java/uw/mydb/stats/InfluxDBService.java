@@ -23,7 +23,7 @@ public class InfluxDBService {
 
     @Bean
     InfluxDB influxDB() {
-        MydbConfig.MetricService config = MydbConfigManager.getConfig().getMetricService();
+        MydbConfig.MetricService config = MydbConfigManager.getConfig().getStats().getMetricService();
         InfluxDB influxDB = InfluxDBFactory.connect(config.getHost(), config.getUsername(), config.getPassword());
         influxDB.enableBatch(100, 30, TimeUnit.SECONDS);
         return influxDB;

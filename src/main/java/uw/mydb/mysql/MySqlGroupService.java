@@ -199,4 +199,30 @@ public class MySqlGroupService {
         return service;
     }
 
+    /**
+     * 获得MasterService。
+     *
+     * @return
+     */
+    public List<MySqlService> getMasterServices() {
+        return masterServices;
+    }
+
+    /**
+     * 获得Slave服务。
+     *
+     * @return
+     */
+    public List<MySqlService> getSlaveServices() {
+        return slaveServices;
+    }
+
+    /**
+     * 获得所有的服务（加权计算过）
+     *
+     * @return
+     */
+    public List<MySqlService> getAllServices() {
+        return allServices;
+    }
 }

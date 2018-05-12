@@ -2,9 +2,11 @@ package uw.mydb.stats;
 
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.conf.MydbConfigManager;
-import uw.mydb.stats.vo.SlowSql;
-import uw.mydb.stats.vo.SqlStatsPair;
+import uw.mydb.mysql.MySqlGroupManager;
+import uw.mydb.stats.vo.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,9 +35,35 @@ public class StatsFactory {
     private static Map<String, SqlStatsPair> schemaStatsMap = new ConcurrentHashMap();
 
     /**
-     * 基于mysql库表的统计表。
+     * 基于mysql的统计表，用于程序内统计。
      */
-    private static Map<String, SqlStatsPair> mysqlStatsMap = new ConcurrentHashMap();
+    private static Map<String, SqlStats> mysqlStatsMap = new ConcurrentHashMap();
+
+    /**
+     * 基于mysql库表的统计表，用于metric统计。
+     */
+    private static Map<String, SqlStats> mysqlDbStatsMap = new ConcurrentHashMap();
+
+    public static SqlStatsPair getMyDbStats() {
+        return myDbStats;
+    }
+
+    public static Map<String, SqlStatsPair> getClientStatsMap() {
+        return clientStatsMap;
+    }
+
+    public static Map<String, SqlStatsPair> getSchemaStatsMap() {
+        return schemaStatsMap;
+    }
+
+    /**
+     * 获得mysql库统计。
+     *
+     * @return
+     */
+    public static Map<String, SqlStats> getMysqlDbStatsMap() {
+        return mysqlStatsMap;
+    }
 
     /**
      * 统计来自mydb的数据。
@@ -87,23 +115,46 @@ public class StatsFactory {
      * 统计来源于mysql的数据。
      */
     public static void statsMysql(String mysqlGroup, String mysql, String database, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
-        //获得mysql统计表
-        SqlStatsPair msp = mysqlStatsMap.putIfAbsent(new StringBuilder().append(mysqlGroup).append('#').append(mysql).toString(), new SqlStatsPair(config.isMysqlMetrics(), config.getMetricService().isEnabled()));
-        if (isMasterSql) {
-            msp.addSqlWriteCount(1);
-        } else {
-            msp.addSqlReadCount(1);
+        String mysqlHost = new StringBuilder(100).append(mysqlGroup).append('$').append(mysql).toString();
+        String mysqlDb = new StringBuilder(100).append('$').append(database).toString();
+        if (config.isMysqlMetrics()) {
+            //获得mysql统计表
+            SqlStats msp = mysqlStatsMap.putIfAbsent(mysqlHost, new SqlStats());
+            if (isMasterSql) {
+                msp.addSqlWriteCount(1);
+            } else {
+                msp.addSqlReadCount(1);
+            }
+            if (isExeSuccess) {
+                msp.addExeSuccessCount(1);
+            } else {
+                msp.addExeFailureCount(1);
+            }
+            msp.addExeTime(exeTime);
+            msp.addDataRowsCount(dataRowsCount);
+            msp.addAffectRowsCount(affectRowsCount);
+            msp.addSendBytes(sendBytes);
+            msp.addRecvBytes(recvBytes);
+
+            if (config.getMetricService().isEnabled()) {
+                SqlStats mdsp = mysqlDbStatsMap.putIfAbsent(mysqlDb, new SqlStats());
+                if (isMasterSql) {
+                    mdsp.addSqlWriteCount(1);
+                } else {
+                    mdsp.addSqlReadCount(1);
+                }
+                if (isExeSuccess) {
+                    mdsp.addExeSuccessCount(1);
+                } else {
+                    mdsp.addExeFailureCount(1);
+                }
+                mdsp.addExeTime(exeTime);
+                mdsp.addDataRowsCount(dataRowsCount);
+                mdsp.addAffectRowsCount(affectRowsCount);
+                mdsp.addSendBytes(sendBytes);
+                mdsp.addRecvBytes(recvBytes);
+            }
         }
-        if (isExeSuccess) {
-            msp.addExeSuccessCount(1);
-        } else {
-            msp.addExeFailureCount(1);
-        }
-        msp.addExeTime(exeTime);
-        msp.addDataRowsCount(dataRowsCount);
-        msp.addAffectRowsCount(affectRowsCount);
-        msp.addSendBytes(sendBytes);
-        msp.addRecvBytes(recvBytes);
     }
 
     /**
@@ -113,6 +164,28 @@ public class StatsFactory {
         if (exeTime > config.getSlowQueryTimeout()) {
             SlowSql slowSql = new SlowSql(client, schema, sql, exeTime, exeDate);
         }
+    }
+
+    /**
+     * 返回mydb服务状态。
+     *
+     * @return
+     */
+    public static ServerStats getMydbServiceStats() {
+        //获得按主机分组统计的map。
+        return new ServerStats();
+    }
+
+    /**
+     * 获得mysql服务器状态。
+     */
+    public static List<MySqlServiceStats> getMySqlStats() {
+        ArrayList<MySqlServiceStats> list = new ArrayList<>();
+        MySqlGroupManager.getMysqlGroupServiceMap().values().stream().forEach(s -> {
+            s.getMasterServices().stream().forEach(x -> list.add(new MySqlServiceStats(x)));
+            s.getSlaveServices().stream().forEach(x -> list.add(new MySqlServiceStats(x)));
+        });
+        return list;
     }
 
 }
