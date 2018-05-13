@@ -3,12 +3,16 @@ package uw.mydb.rest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uw.mydb.stats.StatsFactory;
+import uw.mydb.stats.vo.MySqlRunInfo;
+import uw.mydb.stats.vo.ServerRunInfo;
+import uw.mydb.stats.vo.SqlStats;
 import uw.mydb.stats.vo.SqlStatsPair;
 
 import java.util.Map;
 
 /**
  * 统计接口。
+ * @author axeon
  */
 @RestController
 @RequestMapping("/api/stats")
@@ -17,43 +21,49 @@ public class StatsApi {
     /**
      * 获得mydbStats数据。
      */
-    @RequestMapping("/server")
+    @RequestMapping("/sql/server")
     public SqlStatsPair getMydbStats() {
-        return StatsFactory.getMyDbStats();
+        return StatsFactory.getServerSqlStats();
+    }
+
+    /**
+     * 获得客户端l连接信息。
+     */
+    @RequestMapping("/sql/client")
+    public Map<String, SqlStatsPair> getClients() {
+        return StatsFactory.getClientSqlStatsMap();
+    }
+
+    /**
+     * 获得schema信息。
+     */
+    @RequestMapping("/sql/schema")
+    public Map<String, SqlStatsPair> getSchemaStats() {
+        return StatsFactory.getSchemaSqlStatsMap();
     }
 
     /**
      * 获得mysql状态统计。
      */
-    @RequestMapping("/mysqlStats")
-    public Map<String, SqlStatsPair> getMysqlStats() {
-        return StatsFactory.getMysqlStatsMap();
+    @RequestMapping("/sql/mysql")
+    public Map<String, SqlStats> getMysqlStats() {
+        return StatsFactory.getMysqlSqlStatsMap();
     }
 
     /**
-     * 获得客户端l连接信息。
+     * 获得服务器运行信息。
      */
-    @RequestMapping("/clients")
-    public Map<String, SqlStatsPair> getClients() {
-        return StatsFactory.getClientStatsMap();
+    @RequestMapping("/run/server")
+    public ServerRunInfo getServerRunInfo() {
+        return StatsFactory.getServerRunStats();
     }
 
     /**
-     * 获得客户端l连接信息。
+     * 获得mysql运行信息。
      */
-    @RequestMapping("/clientStats")
-    public Map<String, SqlStatsPair> getClientStats() {
-        return StatsFactory.getClientStatsMap();
+    @RequestMapping("/run/mysql")
+    public Map<String, MySqlRunInfo> getMySqlRunInfos() {
+        return StatsFactory.getMySqlServiceStats();
     }
-
-    /**
-     * 获得客户端l连接信息。
-     */
-    @RequestMapping("/schemaStats")
-    public Map<String, SqlStatsPair> getSchemaStats() {
-        return StatsFactory.getSchemaStatsMap();
-
-    }
-
 
 }

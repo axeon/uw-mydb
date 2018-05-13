@@ -6,9 +6,10 @@ import uw.mydb.mysql.MySqlGroupManager;
 import uw.mydb.stats.vo.*;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 统计的工厂类。
@@ -22,17 +23,17 @@ public class StatsFactory {
     /**
      * 服务器统计表。
      */
-    private static SqlStatsPair myDbStats = new SqlStatsPair(config.isServerMetrics(), config.getMetricService().isEnabled());
+    private static SqlStatsPair serverSqlStats = new SqlStatsPair(config.isServerMetrics(), config.getMetricService().isEnabled());
 
     /**
      * 基于客户端的统计表。
      */
-    private static Map<String, SqlStatsPair> clientStatsMap = new ConcurrentHashMap();
+    private static Map<String, SqlStatsPair> clientSqlStatsMap = new ConcurrentHashMap();
 
     /**
      * 基于mydb库表的统计表。
      */
-    private static Map<String, SqlStatsPair> schemaStatsMap = new ConcurrentHashMap();
+    private static Map<String, SqlStatsPair> schemaSqlStatsMap = new ConcurrentHashMap();
 
     /**
      * 基于mysql的统计表，用于程序内统计。
@@ -44,24 +45,39 @@ public class StatsFactory {
      */
     private static Map<String, SqlStats> mysqlDbStatsMap = new ConcurrentHashMap();
 
-    public static SqlStatsPair getMyDbStats() {
-        return myDbStats;
-    }
-
-    public static Map<String, SqlStatsPair> getClientStatsMap() {
-        return clientStatsMap;
-    }
-
-    public static Map<String, SqlStatsPair> getSchemaStatsMap() {
-        return schemaStatsMap;
-    }
-
     /**
-     * 获得mysql库统计。
+     * 获得server Sql统计。
      *
      * @return
      */
-    public static Map<String, SqlStats> getMysqlDbStatsMap() {
+    public static SqlStatsPair getServerSqlStats() {
+        return serverSqlStats;
+    }
+
+    /**
+     * 获得客户端sql统计。
+     *
+     * @return
+     */
+    public static Map<String, SqlStatsPair> getClientSqlStatsMap() {
+        return clientSqlStatsMap;
+    }
+
+    /**
+     * 获得schema统计。
+     *
+     * @return
+     */
+    public static Map<String, SqlStatsPair> getSchemaSqlStatsMap() {
+        return schemaSqlStatsMap;
+    }
+
+    /**
+     * 获得mysql统计。
+     *
+     * @return
+     */
+    public static Map<String, SqlStats> getMysqlSqlStatsMap() {
         return mysqlStatsMap;
     }
 
@@ -70,33 +86,33 @@ public class StatsFactory {
      */
     public static void statsMydb(String clientIp, String schema, String table, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
         //获得客户端统计表
-        SqlStatsPair csp = clientStatsMap.putIfAbsent(clientIp, new SqlStatsPair(config.isClientMetrics(), config.getMetricService().isEnabled()));
+        SqlStatsPair csp = clientSqlStatsMap.computeIfAbsent(clientIp, s -> new SqlStatsPair(config.isClientMetrics(), config.getMetricService().isEnabled()));
         //获得schema统计表。
-        SqlStatsPair ssp = schemaStatsMap.putIfAbsent(new StringBuilder().append(schema).append('.').append(table).toString(), new SqlStatsPair(config.isSchemaMetrics(), config.getMetricService().isEnabled()));
+        SqlStatsPair ssp = schemaSqlStatsMap.computeIfAbsent(new StringBuilder().append(schema).append('.').append(table).toString(), s -> new SqlStatsPair(config.isSchemaMetrics(), config.getMetricService().isEnabled()));
 
         if (isMasterSql) {
-            myDbStats.addSqlWriteCount(1);
+            serverSqlStats.addSqlWriteCount(1);
             csp.addSqlWriteCount(1);
             ssp.addSqlWriteCount(1);
         } else {
-            myDbStats.addSqlReadCount(1);
+            serverSqlStats.addSqlReadCount(1);
             csp.addSqlReadCount(1);
             ssp.addSqlReadCount(1);
         }
         if (isExeSuccess) {
-            myDbStats.addExeSuccessCount(1);
+            serverSqlStats.addExeSuccessCount(1);
             csp.addExeSuccessCount(1);
             ssp.addExeSuccessCount(1);
         } else {
-            myDbStats.addExeFailureCount(1);
+            serverSqlStats.addExeFailureCount(1);
             csp.addExeSuccessCount(1);
             ssp.addExeSuccessCount(1);
         }
-        myDbStats.addExeTime(exeTime);
-        myDbStats.addDataRowsCount(dataRowsCount);
-        myDbStats.addAffectRowsCount(affectRowsCount);
-        myDbStats.addSendBytes(sendBytes);
-        myDbStats.addRecvBytes(recvBytes);
+        serverSqlStats.addExeTime(exeTime);
+        serverSqlStats.addDataRowsCount(dataRowsCount);
+        serverSqlStats.addAffectRowsCount(affectRowsCount);
+        serverSqlStats.addSendBytes(sendBytes);
+        serverSqlStats.addRecvBytes(recvBytes);
 
         csp.addExeTime(exeTime);
         csp.addDataRowsCount(dataRowsCount);
@@ -119,7 +135,7 @@ public class StatsFactory {
         String mysqlDb = new StringBuilder(100).append('$').append(database).toString();
         if (config.isMysqlMetrics()) {
             //获得mysql统计表
-            SqlStats msp = mysqlStatsMap.putIfAbsent(mysqlHost, new SqlStats());
+            SqlStats msp = mysqlStatsMap.computeIfAbsent(mysqlHost, s -> new SqlStats());
             if (isMasterSql) {
                 msp.addSqlWriteCount(1);
             } else {
@@ -137,7 +153,7 @@ public class StatsFactory {
             msp.addRecvBytes(recvBytes);
 
             if (config.getMetricService().isEnabled()) {
-                SqlStats mdsp = mysqlDbStatsMap.putIfAbsent(mysqlDb, new SqlStats());
+                SqlStats mdsp = mysqlDbStatsMap.computeIfAbsent(mysqlDb, x -> new SqlStats());
                 if (isMasterSql) {
                     mdsp.addSqlWriteCount(1);
                 } else {
@@ -171,21 +187,21 @@ public class StatsFactory {
      *
      * @return
      */
-    public static ServerStats getMydbServiceStats() {
+    public static ServerRunInfo getServerRunStats() {
         //获得按主机分组统计的map。
-        return new ServerStats();
+        return new ServerRunInfo();
     }
 
     /**
-     * 获得mysql服务器状态。
+     * 获得mysql服务器状态表。
      */
-    public static List<MySqlServiceStats> getMySqlStats() {
-        ArrayList<MySqlServiceStats> list = new ArrayList<>();
+    public static Map<String, MySqlRunInfo> getMySqlServiceStats() {
+        ArrayList<MySqlRunInfo> list = new ArrayList<>();
         MySqlGroupManager.getMysqlGroupServiceMap().values().stream().forEach(s -> {
-            s.getMasterServices().stream().forEach(x -> list.add(new MySqlServiceStats(x)));
-            s.getSlaveServices().stream().forEach(x -> list.add(new MySqlServiceStats(x)));
+            s.getMasterServices().stream().forEach(x -> list.add(new MySqlRunInfo(x)));
+            s.getSlaveServices().stream().forEach(x -> list.add(new MySqlRunInfo(x)));
         });
-        return list;
+        return list.stream().collect(Collectors.toMap(MySqlRunInfo::getName, Function.identity()));
     }
 
 }

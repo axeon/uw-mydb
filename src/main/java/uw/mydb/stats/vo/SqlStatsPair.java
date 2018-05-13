@@ -1,5 +1,7 @@
 package uw.mydb.stats.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * sql统计数据对。
  * 里面包含两个sql统计对象，一个是全局对象，一个是临时对象。
@@ -10,6 +12,7 @@ public class SqlStatsPair {
 
     public SqlStats sqlStats;
 
+    @JsonIgnore
     public SqlStats sqlStatsMetrics;
 
     public SqlStatsPair(boolean enableStats, boolean enableMetrics) {
@@ -112,6 +115,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearSqlReadCount() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearSqlReadCount();
@@ -128,6 +132,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearSqlWriteCount() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearSqlWriteCount();
@@ -144,6 +149,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearDataRowsCount() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearDataRowsCount();
@@ -160,6 +166,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearAffectRowsCount() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearAffectRowsCount();
@@ -176,6 +183,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearExeSuccessCount() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearExeSuccessCount();
@@ -184,6 +192,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearExeFailureCount() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearExeFailureCount();
@@ -208,6 +217,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearExeTime() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearExeTime();
@@ -224,6 +234,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearSendBytes() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearSendBytes();
@@ -240,6 +251,7 @@ public class SqlStatsPair {
         }
     }
 
+    @JsonIgnore
     public long getAndClearRecvBytes() {
         if (sqlStatsMetrics != null) {
             return sqlStatsMetrics.getAndClearRecvBytes();

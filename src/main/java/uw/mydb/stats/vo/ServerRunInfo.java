@@ -10,9 +10,22 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.counting;
 
 /**
- * MyDb统计数据。
+ * MyDb运行信息。
+ *
+ * @author axeon
  */
-public class ServerStats {
+public class ServerRunInfo {
+
+    /**
+     * 返回jvm内存占用数组。
+     * 格式为：maxMemory/totalMemory/freeMemory
+     *
+     * @return
+     */
+    public long[] getJvmMemory() {
+        Runtime runtime = Runtime.getRuntime();
+        return new long[]{runtime.maxMemory(), runtime.totalMemory(), runtime.freeMemory()};
+    }
 
     /**
      * 获得当前连接数。

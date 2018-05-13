@@ -1,7 +1,10 @@
 package uw.mydb.mysql.tool;
 
 import io.netty.buffer.ByteBuf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uw.mydb.mysql.MySqlGroupManager;
+import uw.mydb.mysql.MySqlGroupService;
 import uw.mydb.mysql.MySqlSession;
 import uw.mydb.mysql.MySqlSessionCallback;
 import uw.mydb.protocol.packet.CommandPacket;
@@ -15,10 +18,12 @@ import uw.mydb.protocol.packet.MySqlPacket;
  */
 public abstract class LocalTaskAdapter<T> implements MySqlSessionCallback {
 
+    private static final Logger logger = LoggerFactory.getLogger(LocalTaskAdapter.class);
+
     /**
-     * 用于执行的命令的mysql session。
+     * 用于执行的命令的mysqlGroupName。
      */
-    protected MySqlSession mysqlSession;
+    protected String mysqlGroupName;
 
     /**
      * 本地命令回调。
@@ -57,7 +62,7 @@ public abstract class LocalTaskAdapter<T> implements MySqlSessionCallback {
 
 
     public LocalTaskAdapter(String mysqlGroupName, LocalCmdCallback<T> localCmdCallback) {
-        this.mysqlSession = MySqlGroupManager.getMysqlGroupService(mysqlGroupName).getMasterService().getSession(this);
+        this.mysqlGroupName = mysqlGroupName;
         this.localCmdCallback = localCmdCallback;
     }
 
@@ -78,7 +83,18 @@ public abstract class LocalTaskAdapter<T> implements MySqlSessionCallback {
         CommandPacket cmd = new CommandPacket();
         cmd.command = MySqlPacket.CMD_QUERY;
         cmd.arg = sql.getBytes();
-        this.mysqlSession.exeCommand(isMaster, cmd);
+
+        MySqlGroupService groupService = MySqlGroupManager.getMysqlGroupService(mysqlGroupName);
+        if (groupService == null) {
+            logger.warn("无法找到合适的mysqlGroup!");
+            return;
+        }
+        MySqlSession mysqlSession = groupService.getMasterService().getSession(this);
+        if (mysqlSession == null) {
+            logger.warn("无法找到合适的mysqlSession!");
+            return;
+        }
+        mysqlSession.exeCommand(isMaster, cmd);
     }
 
     /**

@@ -131,6 +131,11 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      */
     private boolean isExeSuccess = true;
 
+    /**
+     * 正在执行的指令。
+     */
+    private CommandPacket command;
+
 
     public MySqlSession(MySqlService mysqlService, Channel channel) {
         this.mysqlService = mysqlService;
@@ -176,7 +181,8 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
     public void exeCommand(boolean isMasterSql, CommandPacket command) {
         this.isMasterSql = isMasterSql;
         ByteBuf buf = channel.alloc().buffer();
-        command.write(buf);
+        this.command = command;
+        this.command.write(buf);
         //标记发送字节数。
         sendBytes += buf.readableBytes();
         channel.writeAndFlush(buf);
@@ -192,7 +198,8 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         this.database = sqlInfo.getDatabase();
         this.table = sqlInfo.getTable();
         ByteBuf buf = channel.alloc().buffer();
-        sqlInfo.genPacket().write(buf);
+        this.command = sqlInfo.genPacket();
+        this.command.write(buf);
         //标记发送字节数。
         sendBytes += buf.readableBytes();
         channel.writeAndFlush(buf);
@@ -212,8 +219,6 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * 解绑。
      */
     public void unbind() {
-        //先归还链接
-        this.mysqlService.requiteSession(this);
         long now = SystemClock.now();
         exeTime = (now - this.lastAccess);
         this.lastAccess = now;
@@ -221,6 +226,17 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         //再执行解绑
         this.sessionCallback.unbind();
         this.sessionCallback = null;
+        //数据归零
+        command = null;
+        isMasterSql = false;
+        isExeSuccess = true;
+        this.exeTime = 0;
+        this.dataRowsCount = 0;
+        this.affectRowsCount = 0;
+        this.recvBytes = 0;
+        this.sendBytes = 0;
+        //最后归还链接
+        this.mysqlService.requiteSession(this);
     }
 
     /**

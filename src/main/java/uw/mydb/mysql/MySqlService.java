@@ -3,10 +3,7 @@ package uw.mydb.mysql;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
@@ -77,7 +74,18 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
     /**
      * 正在连接中的session数量。
      */
-    private AtomicInteger pendingAddCount = new AtomicInteger(0);
+    private AtomicInteger pendingCreateCount = new AtomicInteger(0);
+
+    /**
+     * 连接建立数。
+     */
+    private AtomicInteger connectionCreateCount = new AtomicInteger(0);
+
+    /**
+     * 连接建立错误计数。
+     */
+    private AtomicInteger connectionCreateErrorCount = new AtomicInteger(0);
+
     /**
      * 是否活着。
      */
@@ -124,6 +132,7 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
             group = new NioEventLoopGroup(0, new ThreadFactoryBuilder().setNameFormat("mysql_" + name).build());
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .option(ChannelOption.TCP_NODELAY, false)
                     .handler(new MySqlDataHandlerFactory());
@@ -208,14 +217,27 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
     private MySqlSession createSession(String msg) {
         MySqlSession session = null;
         try {
+            connectionCreateCount.incrementAndGet();
             ChannelFuture cf = bootstrap.connect(config.getHost(), config.getPort());
+            cf.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (!future.isSuccess()) {
+                        logger.warn("---> MySqlService[{}]({}+{}) create session {} error: {}", getName(), sessionBag.size(), pendingCreateCount.get(), msg, future.cause());
+                        pendingCreateCount.decrementAndGet();
+                        connectionCreateErrorCount.incrementAndGet();
+                    }
+                }
+            });
             Channel channel = cf.channel();
             session = new MySqlSession(this, channel);
             channel.attr(MySqlDataHandler.MYSQL_SESSION).set(session);
             cf.sync();
-            logger.info("MySqlService[{}]({}+{}) create session {} by {}", this.getName(), sessionBag.size(), pendingAddCount.get(), session, msg);
+            logger.info("MySqlService[{}]({}+{}) create session {} by {}", this.getName(), sessionBag.size(), pendingCreateCount.get(), session, msg);
         } catch (InterruptedException e) {
-            logger.error("---> MySqlService[{}]({}+{}) create session {} error: {}", this.getName(), sessionBag.size(), pendingAddCount.get(), msg, e.getMessage());
+            logger.error("---> MySqlService[{}]({}+{}) create session {} error: {}", this.getName(), sessionBag.size(), pendingCreateCount.get(), msg, e.getMessage());
+            this.pendingCreateCount.decrementAndGet();
+            connectionCreateErrorCount.incrementAndGet();
         }
         return session;
     }
@@ -227,7 +249,7 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
      */
     void addSession(MySqlSession session) {
         sessionBag.add(session);
-        pendingAddCount.decrementAndGet();
+        pendingCreateCount.decrementAndGet();
         logger.debug("{} - Added connection {}", name, session);
     }
 
@@ -244,7 +266,7 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
             do {
                 MySqlSession session = sessionBag.borrow(timeout);
                 if (session == null) {
-                    logger.warn("session is null");
+                    logger.warn("can't get session from pool!");
                     continue; // We timed out... break and throw exception
                 }
                 //检查session状态。
@@ -304,6 +326,32 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
     }
 
     /**
+     * 获得建立中的连接数。
+     * @return
+     */
+    public int getPendingCreateConnections() {
+        return pendingCreateCount.get();
+    }
+
+    /**
+     * 获得连接创建计数。
+     *
+     * @return
+     */
+    public int getConnectionCreateCount() {
+        return connectionCreateCount.get();
+    }
+
+    /**
+     * 获得连接创建错误计数。
+     *
+     * @return
+     */
+    public int getConnectionCreateErrorCount() {
+        return connectionCreateErrorCount.get();
+    }
+
+    /**
      * 永久关闭一个连接。
      *
      * @param session
@@ -329,8 +377,8 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
      */
     @Override
     public void addBagItem(int waiting) {
-        if (pendingAddCount.get() == 0) {
-            logger.info("waiting:{} - pendingAddCount:{}>0", waiting, pendingAddCount.get());
+        if (pendingCreateCount.get() == 0) {
+            logger.info("waiting:{} - pendingCreateCount:{}>0", waiting, pendingCreateCount.get());
             addSessionExecutor.submit(SESSION_CREATOR);
         }
     }
@@ -352,10 +400,10 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
         @Override
         public void run() {
             while (shouldCreateAnotherSession()) {
-                pendingAddCount.incrementAndGet();
+                pendingCreateCount.incrementAndGet();
                 final MySqlSession session = createSession("auto create");
                 if (session == null) {
-                    pendingAddCount.decrementAndGet();
+                    pendingCreateCount.decrementAndGet();
                     break;
                 }
             }
@@ -367,8 +415,8 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
          * @return
          */
         private boolean shouldCreateAnotherSession() {
-            return (getTotalSessions() + pendingAddCount.get()) < config.getMaxConn() &&
-                    (sessionBag.getWaitingThreadCount() > pendingAddCount.get() || (getIdleSessions()) < config.getMinConn());
+            return (getTotalSessions() + pendingCreateCount.get()) < config.getMaxConn() &&
+                    (sessionBag.getWaitingThreadCount() > pendingCreateCount.get() || (getIdleSessions()) < config.getMinConn());
         }
 
     }
