@@ -1,5 +1,7 @@
 package uw.mydb.stats.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -96,6 +98,7 @@ public class SqlStats {
         return sqlReadCount.get();
     }
 
+    @JsonIgnore
     public long getAndClearSqlReadCount() {
         return sqlReadCount.getAndSet(0);
     }
@@ -105,6 +108,7 @@ public class SqlStats {
         return sqlWriteCount.get();
     }
 
+    @JsonIgnore
     public long getAndClearSqlWriteCount() {
         return sqlWriteCount.getAndSet(0);
     }
@@ -113,6 +117,7 @@ public class SqlStats {
         return dataRowsCount.get();
     }
 
+    @JsonIgnore
     public long getAndClearDataRowsCount() {
         return dataRowsCount.getAndSet(0);
     }
@@ -121,6 +126,7 @@ public class SqlStats {
         return affectRowsCount.get();
     }
 
+    @JsonIgnore
     public long getAndClearAffectRowsCount() {
         return affectRowsCount.getAndSet(0);
     }
@@ -129,10 +135,12 @@ public class SqlStats {
         return exeSuccessCount.get();
     }
 
+    @JsonIgnore
     public long getAndClearExeSuccessCount() {
         return exeSuccessCount.getAndSet(0);
     }
 
+    @JsonIgnore
     public long getAndClearExeFailureCount() {
         return exeFailureCount.getAndSet(0);
     }
@@ -145,6 +153,7 @@ public class SqlStats {
         return exeTime.get();
     }
 
+    @JsonIgnore
     public long getAndClearExeTime() {
         return exeTime.getAndSet(0);
     }
@@ -153,6 +162,7 @@ public class SqlStats {
         return sendBytes.get();
     }
 
+    @JsonIgnore
     public long getAndClearSendBytes() {
         return sendBytes.getAndSet(0);
     }
@@ -161,6 +171,7 @@ public class SqlStats {
         return recvBytes.get();
     }
 
+    @JsonIgnore
     public long getAndClearRecvBytes() {
         return recvBytes.getAndSet(0);
     }
