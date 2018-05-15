@@ -47,18 +47,27 @@ SET
 SHOW 
 EXPLAIN
 
-## 基于分库的算法
-### hash 哈希分库算法
+# 分库分表算法
+## RouteDatabaseByHash 哈希分库算法
+
+## RouteDatabaseByRange 基于范围的分库算法
 
 ### range 基于范围分库
 
-### preset 预设值分库算法
+##  RouteByPreset 预设值算法
 preset可以覆盖hash/range的值
 
-## 基于分表的算法
-### date 基于日期的分表算法
+## RouteTableByDate 基于日期的分表算法
 可以合用
-### code 基于代码的分表算法
+### RouteTableByCode 基于代码的分表算法
 独立使用
-### range 基于范围的分表算法
+### RouteTableByCode 基于范围的分表算法
 独立使用
+
+# 支持的API
+- /api/stats/run/server 服务器运行期信息
+- /api/stats/run/mysql mysql运行期信息
+- /api/stats/sql/server 服务器sql统计信息
+- /api/stats/sql/mysql mysql sql统计信息
+- /api/stats/sql/schema schema sql统计信息
+- /api/stats/sql/client 客户端sql统计信息

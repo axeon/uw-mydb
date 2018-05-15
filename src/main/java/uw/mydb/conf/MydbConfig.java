@@ -804,6 +804,11 @@ public class MydbConfig {
         private String database;
 
         /**
+         * 间隔时间。
+         */
+        private long interval = 30000;
+
+        /**
          * 检测是否启用。
          *
          * @return
@@ -842,6 +847,14 @@ public class MydbConfig {
 
         public void setDatabase(String database) {
             this.database = database;
+        }
+
+        public long getInterval() {
+            return interval;
+        }
+
+        public void setInterval(long interval) {
+            this.interval = interval;
         }
     }
 

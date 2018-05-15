@@ -25,6 +25,7 @@ public class InfluxDBService {
     /**
      * 更新mydb的sql统计数据。
      */
+//    @Scheduled(fixedRate=${"uw.mydb.stats.metric-service.interval"})
     public void updateMydbSqlStats() {
 
     }

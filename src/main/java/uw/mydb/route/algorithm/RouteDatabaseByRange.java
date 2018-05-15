@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  * 按照固定的long值range来路由。
- * 参数：range:100
+ * 参数：start:起始位置 range:分区大小
  *
  * @author axeon
  */

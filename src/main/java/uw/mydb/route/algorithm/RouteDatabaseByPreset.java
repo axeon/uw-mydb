@@ -14,9 +14,9 @@ import java.util.Map;
  *
  * @author axeon
  */
-public class RouteByPreset extends RouteAlgorithm {
+public class RouteDatabaseByPreset extends RouteAlgorithm {
 
-    private static final Logger logger = LoggerFactory.getLogger(RouteByPreset.class);
+    private static final Logger logger = LoggerFactory.getLogger(RouteDatabaseByPreset.class);
 
     /**
      * 强行指定的参数范围。
