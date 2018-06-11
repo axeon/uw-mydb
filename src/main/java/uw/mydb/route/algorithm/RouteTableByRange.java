@@ -1,5 +1,6 @@
 package uw.mydb.route.algorithm;
 
+import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class RouteTableByRange extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(String tableName, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
         long longValue = -1L;
 
         try {
@@ -39,25 +40,6 @@ public class RouteTableByRange extends RouteAlgorithm {
             routeInfo = routeInfos.get((int) (longValue % routeInfos.size()));
         }
         return routeInfo;
-    }
-
-    /**
-     * 对于定制表来说，根本就无法匹配，直接返回所有表。
-     *
-     * @param tableName
-     * @param routeInfos 携带初始值的路由信息
-     * @param startValue
-     * @param endValue
-     * @return
-     */
-    @Override
-    public List<RouteInfo> calculateRange(String tableName, List<RouteInfo> routeInfos, String startValue, String endValue) {
-        return this.routeInfos;
-    }
-
-    @Override
-    public List<RouteInfo> getAllRouteList(String tableName, List<RouteInfo> routeInfos) {
-        return this.routeInfos;
     }
 
 

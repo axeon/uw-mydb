@@ -33,6 +33,7 @@ public abstract class RouteAlgorithm {
      * @param dataNodeConfigs 数据节点配置
      */
     public void init(String routeName, MydbConfig.AlgorithmConfig algorithmConfig, List<MydbConfig.DataNodeConfig> dataNodeConfigs) {
+        this.routeName = routeName;
         this.algorithmConfig = algorithmConfig;
         //整理dataNode列表
         for (MydbConfig.DataNodeConfig dataNodeConfig : dataNodeConfigs) {
@@ -62,11 +63,12 @@ public abstract class RouteAlgorithm {
      * 根据给定的值，计算出归属表名。
      * 此方法一般增，删，改用。
      *
-     * @param routeInfo 携带初始值的路由信息
-     * @param value     分表数值
+     * @param tableConfig
+     * @param routeInfo   携带初始值的路由信息
+     * @param value       分表数值
      * @return 修正后的路由信息
      */
-    public RouteInfo calculate(String tableName, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
         throw new UnsupportedOperationException();
     }
 
@@ -74,17 +76,18 @@ public abstract class RouteAlgorithm {
      * 根据给定的值，计算出归属表名。
      * 此方法一般查询用。
      *
-     * @param routeInfos 携带初始值的路由信息
+     * @param tableConfig
+     * @param routeInfos  携带初始值的路由信息
      * @return 修正后的路由信息
      */
-    public Map<String, RouteInfo> calculate(String tableName, Map<String, RouteInfo> routeInfos, List<String> values) {
+    public Map<String, RouteInfo> calculate(MydbConfig.TableConfig tableConfig, Map<String, RouteInfo> routeInfos, List<String> values) {
         for (String value : values) {
             RouteInfo routeInfo = routeInfos.get(value);
             if (routeInfo == null) {
-                routeInfo = RouteInfo.newDataWithTable(tableName);
+                routeInfo = RouteInfo.newDataWithTable(tableConfig.getName());
                 routeInfos.put(value, routeInfo);
             }
-            calculate(tableName, routeInfo, value);
+            calculate(tableConfig, routeInfo, value);
         }
         return routeInfos;
     }
@@ -93,12 +96,13 @@ public abstract class RouteAlgorithm {
      * 根据给定之后，计算出所有表名。
      * 此方法一般查询用。
      *
-     * @param routeInfos 携带初始值的路由信息
+     * @param tableConfig
+     * @param routeInfos  携带初始值的路由信息
      * @param startValue
      * @param endValue
      * @return 表名列表
      */
-    public List<RouteInfo> calculateRange(String tableName, List<RouteInfo> routeInfos, String startValue, String endValue) {
+    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) {
         throw new UnsupportedOperationException();
     }
 
@@ -110,7 +114,7 @@ public abstract class RouteAlgorithm {
      *
      * @return
      */
-    public RouteInfo getDefaultRoute(String tableName, RouteInfo routeInfo) {
+    public RouteInfo getDefaultRoute(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo) {
         return routeInfo;
     }
 
@@ -121,10 +125,10 @@ public abstract class RouteAlgorithm {
      *
      * @return
      */
-    public List<RouteInfo> getAllRouteList(String tableName, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
         if (routeInfos == null || routeInfos.size() == 0) {
             for (DataNode dataNode : dataNodes) {
-                RouteInfo routeInfo = RouteInfo.newDataWithTable(tableName);
+                RouteInfo routeInfo = RouteInfo.newDataWithTable(tableConfig.getName());
                 routeInfo.setDataNode(dataNode);
                 routeInfos.add(routeInfo);
             }

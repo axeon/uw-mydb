@@ -122,16 +122,16 @@ public class RouteManager {
         for (RouteAlgorithm routeAlgorithm : routeAlgorithms) {
             RouteAlgorithm.RouteKeyValue value = keyData.getValue(routeAlgorithm.getAlgorithmConfig().getRouteKey());
             if (value.getType() == RouteAlgorithm.RouteKeyValue.SINGLE) {
-                routeInfo = routeAlgorithm.calculate(tableConfig.getName(), routeInfo, value.getValue1());
+                routeInfo = routeAlgorithm.calculate(tableConfig, routeInfo, value.getValue1());
                 routeInfoData.setSingle(routeInfo);
             } else if (value.getType() == RouteAlgorithm.RouteKeyValue.RANGE) {
                 Set<RouteAlgorithm.RouteInfo> set = new HashSet<>();
                 if (routeInfoData.isSingle()) {
-                    List<RouteAlgorithm.RouteInfo> list = routeAlgorithm.calculateRange(tableConfig.getName(), RouteAlgorithm.RouteInfo.newListWithRouteInfo(routeInfoData.getRouteInfo()), value.getValue1(), value.getValue2());
+                    List<RouteAlgorithm.RouteInfo> list = routeAlgorithm.calculateRange(tableConfig, RouteAlgorithm.RouteInfo.newListWithRouteInfo(routeInfoData.getRouteInfo()), value.getValue1(), value.getValue2());
                     set.addAll(list);
                 } else {
                     for (RouteAlgorithm.RouteInfo ri : routeInfoData.getRouteInfos()) {
-                        List<RouteAlgorithm.RouteInfo> list = routeAlgorithm.calculateRange(tableConfig.getName(), RouteAlgorithm.RouteInfo.newListWithRouteInfo(ri), value.getValue1(), value.getValue2());
+                        List<RouteAlgorithm.RouteInfo> list = routeAlgorithm.calculateRange(tableConfig, RouteAlgorithm.RouteInfo.newListWithRouteInfo(ri), value.getValue1(), value.getValue2());
                         set.addAll(list);
                     }
                 }
@@ -139,18 +139,18 @@ public class RouteManager {
             } else if (value.getType() == RouteAlgorithm.RouteKeyValue.MULTI) {
                 Set<RouteAlgorithm.RouteInfo> set = new HashSet<>();
                 if (routeInfoData.isSingle()) {
-                    Map<String, RouteAlgorithm.RouteInfo> map = routeAlgorithm.calculate(tableConfig.getName(), RouteAlgorithm.RouteInfo.newMapWithRouteInfo(routeInfoData.getRouteInfo()), value.getValues());
+                    Map<String, RouteAlgorithm.RouteInfo> map = routeAlgorithm.calculate(tableConfig, RouteAlgorithm.RouteInfo.newMapWithRouteInfo(routeInfoData.getRouteInfo()), value.getValues());
                     set.addAll(map.values());
                 } else {
                     for (RouteAlgorithm.RouteInfo ri : routeInfoData.getRouteInfos()) {
-                        Map<String, RouteAlgorithm.RouteInfo> map = routeAlgorithm.calculate(tableConfig.getName(), RouteAlgorithm.RouteInfo.newMapWithRouteInfo(ri), value.getValues());
+                        Map<String, RouteAlgorithm.RouteInfo> map = routeAlgorithm.calculate(tableConfig, RouteAlgorithm.RouteInfo.newMapWithRouteInfo(ri), value.getValues());
                         set.addAll(map.values());
                     }
                 }
                 routeInfoData.setAll(set);
             } else {
                 //此时说明参数没有匹配上。
-                routeInfo = routeAlgorithm.getDefaultRoute(tableConfig.getName(), routeInfo);
+                routeInfo = routeAlgorithm.getDefaultRoute(tableConfig, routeInfo);
                 routeInfoData.setSingle(routeInfo);
             }
         }
@@ -167,7 +167,7 @@ public class RouteManager {
         List<RouteAlgorithm> routeAlgorithms = getRouteAlgorithmList(tableConfig.getRoute());
         List<RouteAlgorithm.RouteInfo> routeInfo = new ArrayList<>();
         for (RouteAlgorithm routeAlgorithm : routeAlgorithms) {
-            routeInfo = routeAlgorithm.getAllRouteList(tableConfig.getName(), routeInfo);
+            routeInfo = routeAlgorithm.getAllRouteList(tableConfig, routeInfo);
         }
         return routeInfo;
     }

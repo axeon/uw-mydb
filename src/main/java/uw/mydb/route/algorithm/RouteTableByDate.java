@@ -1,5 +1,6 @@
 package uw.mydb.route.algorithm;
 
+import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
 import java.time.LocalDate;
@@ -55,7 +56,7 @@ public class RouteTableByDate extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(String tableName, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
         String text = null;
         //优先选择快速格式化
         if (DATE_PATTERN == null && FORMAT_PATTERN_CODE != null) {
@@ -74,7 +75,7 @@ public class RouteTableByDate extends RouteAlgorithm {
     }
 
     @Override
-    public List<RouteInfo> calculateRange(String tableName, List<RouteInfo> routeInfos, String startValue, String endValue) {
+    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) {
         List<String> list = new ArrayList<>();
         LocalDateTime startDate, endDate;
         if (DATE_PATTERN == null) {
@@ -115,16 +116,16 @@ public class RouteTableByDate extends RouteAlgorithm {
     /**
      * 默认导向到最新的日期分片。
      *
-     * @param tableName
+     * @param tableConfig
      * @param routeInfo
      * @return
      */
     @Override
-    public RouteInfo getDefaultRoute(String tableName, RouteInfo routeInfo) {
+    public RouteInfo getDefaultRoute(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo) {
         if (routeInfo.checkValid()) {
             //此处有性能问题，最好缓存当前时间
             String now = LocalDateTime.now().format(DATE_PATTERN_DEFAULT);
-            return calculate(tableName, routeInfo, now);
+            return calculate(tableConfig, routeInfo, now);
         } else {
             return routeInfo;
         }
@@ -134,11 +135,13 @@ public class RouteTableByDate extends RouteAlgorithm {
      * 此方法用于返回创建表信息。
      * 对于日期类型，一般会向前进一天。
      *
+     *
+     * @param tableConfig
      * @param routeInfos
      * @return
      */
     @Override
-    public List<RouteInfo> getAllRouteList(String tableName, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
         List<String> list = new ArrayList<>();
         LocalDate today = LocalDate.now();
         list.add(today.format(FORMAT_PATTERN));

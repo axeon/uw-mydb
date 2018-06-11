@@ -11,7 +11,7 @@ uw:
         username:
         password:
         database:
-        interval:
+        interval: 100000
     server:
       ip: 0.0.0.0
       port: 3309
@@ -19,20 +19,20 @@ uw:
       root:
         password: umtone888
         schemas:
-          - sbtest
+          - saas
         hosts:
           - .*
     mysql-groups:
-      local-db:                      # 复制组 名称   必须唯一
+      saas-host:                      # 复制组 名称   必须唯一
         group-type: SINGLE_NODE           # 复制类型
         switch-type: SWITCH              # 切换类型
         balance-type: BALANCE_ALL_READ   # 读写分离类型
         masters:
          - weight: 1 #读取访问权重，默认为1.如果master主机不想承担读，可以设置为0
-           host: localhost
+           host: 192.168.88.88
            port: 3306                  # port
            user: root                  # 用户名
-           password: umtone888            # 密码
+           password: AtqRpgPJN6bdZ!eT            # 密码
            min-conn: 10                   # 最小连接
            max-conn: 100                  # 最大连接
            max-retry: 3            # 连接重试次数
@@ -40,32 +40,73 @@ uw:
            conn-idle-timeout: 180   # 最长空闲超时(s)
            conn-busy-timeout: 180   # 最长繁忙超时(s)
     schemas:
-      sbtest:
-        base-node: local-db  # baseNode设置为mysqlgroup名，schema必须和database一致。
+      saas:
+        base-node: saas-host  # baseNode设置为mysqlgroup名，schema必须和database一致。
         tables:
-          sbtest1:
-            route: saas-cust
-            match-type:  MATCH_FIX  #路由类型，默认是绝对匹配。
+          saas_mch_info:
+            route: saas
+          saas_mch_credit:
+            route: saas
+          saas_mch_credit_log:
+            route: saas-date
+          saas_mch_payment:
+            route: saas
+          saas_mch_payment_log:
+            route: saas
+          saas_mch_receipt:
+            route: saas
+          saas_mch_receipt_log:
+            route: saas
+          saas_file_info:
+            route: saas
+          hotel_order:
+            route: saas-date
+          hotel_order_detail:
+            route: saas-date
+          hotel_order_people:
+            route: saas-date
+          hotel_order_notifcation:
+            route: saas-date
+          hotel_product:
+            route: saas
+          hotel_product_plan:
+            route: saas
+          hotel_product_plan_price:
+            route: saas
+          hotel_product_plan_type:
+            route: saas
+          hotel_product_price:
+            route: saas
+          hotel_info_supplier:
+            route: supplier-hotel
     routes:
-      saas-cust:
+      supplier-hotel:
+        algorithms:
+          - algorithm: uw.mydb.route.algorithm.RouteTableByAutoKey
+            params: {"mysqlGroup": "saas-host","database": "saas_hotel"}
+            route-key: supplier_id
+      saas:
         data-nodes:
-          - mysql-group: local-db
+          - mysql-group: saas-host
             db-config: [saas_$1-2]
         algorithms:
           - algorithm: uw.mydb.route.algorithm.RouteDatabaseByRange
-            params: {start: 10000, range: 1000}
-            route-key: mch_id
-      saas-cust-date:
+            params: {start: 10000, range: 10}
+            route-key: saas_id
+          - algorithm: uw.mydb.route.algorithm.RouteDatabaseByPreset
+            params: {"10000": saas-host.saas_big }
+            route-key: saas_id
+      saas-date:
         data-nodes:
-          - mysql-group: local-db
-            db-config: [saas_$1-10,saas_12]
+          - mysql-group: saas-host
+            db-config: [saas_$1-2]
         algorithms:
           - algorithm: uw.mydb.route.algorithm.RouteDatabaseByRange
-            params: {start: 10000, range: 1000}
-            route-key: mch_id
+            params: {start: 10000, range: 10}
+            route-key: saas_id
           - algorithm: uw.mydb.route.algorithm.RouteDatabaseByPreset
-            params: {"10000": my.saas_big }
-            route-key: mch_id
+            params: {"10000": saas-host.saas_big }
+            route-key: saas_id
           - algorithm: uw.mydb.route.algorithm.RouteTableByDate
-            params: {"format-pattern": "yyyyMMdd" }
+            params: {"format-pattern": "yyyyMM" }
             route-key: create_date

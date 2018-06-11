@@ -737,8 +737,6 @@ public class SqlParser {
                     }
                     RouteAlgorithm.RouteKeyValue routeValue = getRouteKeyValue(cName1, cName2);
                     if (routeValue != null) {
-                        //此处被选中。
-                        lexer.nextToken();
                         //判断操作符，取参数。
                         switch (lexer.token()) {
                             case EQ:

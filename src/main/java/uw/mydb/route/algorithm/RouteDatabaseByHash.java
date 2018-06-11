@@ -4,6 +4,7 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
 /**
@@ -23,10 +24,8 @@ public class RouteDatabaseByHash extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(String tableName, RouteInfo routeInfo, String value) {
-        if (routeInfo == null) {
-            routeInfo = RouteInfo.newDataWithTable(tableName);
-        }
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+
         int hash = hashFunction.hashUnencodedChars(value).asInt();
 
         return routeInfo;

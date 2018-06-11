@@ -2,6 +2,7 @@ package uw.mydb.route.algorithm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
 import java.util.List;
@@ -43,10 +44,7 @@ public class RouteDatabaseByRange extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(String tableName, RouteInfo routeInfo, String value) {
-        if (routeInfo == null) {
-            routeInfo = RouteInfo.newDataWithTable(tableName);
-        }
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
 
         long longValue = -1L;
 
@@ -73,7 +71,7 @@ public class RouteDatabaseByRange extends RouteAlgorithm {
     }
 
     @Override
-    public List<RouteInfo> calculateRange(String tableName, List<RouteInfo> routeInfos, String startValue, String endValue) {
+    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) {
         long startNum = -1, endNum = -1;
         try {
             startNum = Long.parseLong(startValue);
@@ -100,7 +98,7 @@ public class RouteDatabaseByRange extends RouteAlgorithm {
                 logger.error("calculate[{}]分库计算失败，节点计算越界{}>{}");
             } else {
                 DataNode dataNode = dataNodes.get(pos);
-                RouteInfo routeInfo = RouteInfo.newDataWithTable(tableName);
+                RouteInfo routeInfo = RouteInfo.newDataWithTable(tableConfig.getName());
                 routeInfo.setDataNode(dataNode);
                 if (!routeInfos.contains(routeInfo)) {
                     routeInfos.add(routeInfo);

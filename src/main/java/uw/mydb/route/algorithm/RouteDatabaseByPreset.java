@@ -2,6 +2,7 @@ package uw.mydb.route.algorithm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
 import java.util.HashMap;
@@ -37,10 +38,8 @@ public class RouteDatabaseByPreset extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(String tableName, RouteInfo routeInfo, String value) {
-        if (routeInfo == null) {
-            routeInfo = RouteInfo.newDataWithTable(tableName);
-        }
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+
         String[] data = params.get(value);
         if (data != null) {
             routeInfo.setMysqlGroup(data[0]);
@@ -52,19 +51,19 @@ public class RouteDatabaseByPreset extends RouteAlgorithm {
     /**
      * 获得全部路由。
      *
-     * @param tableName
+     * @param tableConfig
      * @param routeInfos
      * @return
      */
     @Override
-    public List<RouteInfo> getAllRouteList(String tableName, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
         for (Map.Entry<String, String[]> kv : params.entrySet()) {
             String[] data = kv.getValue();
-            RouteInfo routeInfo = new RouteInfo(data[0], data[1], tableName);
+            RouteInfo routeInfo = new RouteInfo(data[0], data[1], tableConfig.getName());
             if (!routeInfos.contains(routeInfo)) {
                 routeInfos.add(routeInfo);
             }
         }
-        return super.getAllRouteList(tableName, routeInfos);
+        return super.getAllRouteList(tableConfig, routeInfos);
     }
 }
