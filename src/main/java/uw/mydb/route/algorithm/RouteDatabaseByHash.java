@@ -24,7 +24,7 @@ public class RouteDatabaseByHash extends RouteAlgorithm {
     @Override
     public void config() {
         //构造一致性hash。
-        this.consistentHash = new ConsistentHash<>(dataNodes.size() * 2, dataNodes);
+        this.consistentHash = new ConsistentHash<>(128, dataNodes);
     }
 
     @Override

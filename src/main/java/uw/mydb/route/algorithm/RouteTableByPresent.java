@@ -1,5 +1,7 @@
 package uw.mydb.route.algorithm;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
@@ -10,8 +12,11 @@ import java.util.Map;
 
 /**
  * 按照预定分表规则分表。
+ * 参数：key=mysqlGroup.database.table
  */
 public class RouteTableByPresent extends RouteAlgorithm {
+
+    private static final Logger logger = LoggerFactory.getLogger(RouteTableByPresent.class);
 
     /**
      * 预设的表列表。
@@ -22,16 +27,22 @@ public class RouteTableByPresent extends RouteAlgorithm {
     public void config() {
         for (Map.Entry<String, String> kv : this.algorithmConfig.getParams().entrySet()) {
             String[] data = kv.getValue().split("\\.");
-            if (data.length == 3) {
-                routeMap.put(kv.getKey(), new RouteInfo(data[0], data[1], data[2]));
+            if (data.length != 3) {
+                logger.error("参数配置错误！key:[{}], value:[{}]", kv.getKey(), kv.getValue());
+                continue;
             }
+            routeMap.put(kv.getKey(), new RouteInfo(data[0], data[1], data[2]));
+
         }
     }
 
     @Override
     public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
         RouteInfo route = routeMap.get(value);
-        if (route != null) {
+
+        if (route == null) {
+            logger.error("value:[{}]无法找到匹配的路由信息！");
+        } else {
             routeInfo = route.copy();
         }
         return routeInfo;

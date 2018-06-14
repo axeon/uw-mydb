@@ -36,10 +36,12 @@ public class RouteDatabaseByRange extends RouteAlgorithm {
         try {
             start = Long.parseLong(startString);
         } catch (Exception e) {
+            logger.error("start:[{}]参数配置错误！", start);
         }
         try {
             range = Long.parseLong(rangeString);
         } catch (Exception e) {
+            logger.error("range:[{}]参数配置错误！", range);
         }
     }
 

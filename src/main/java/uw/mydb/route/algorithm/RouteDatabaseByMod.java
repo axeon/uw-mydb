@@ -5,6 +5,11 @@ import org.slf4j.LoggerFactory;
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
+/**
+ * 根据mod来自动分配路由。
+ *
+ * @author axeon
+ */
 public class RouteDatabaseByMod extends RouteAlgorithm {
 
     private static final Logger logger = LoggerFactory.getLogger(RouteDatabaseByMod.class);
@@ -36,7 +41,6 @@ public class RouteDatabaseByMod extends RouteAlgorithm {
         }
         return routeInfo;
     }
-
 
 
 }
