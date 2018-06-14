@@ -1,8 +1,11 @@
 package uw.mydb.route.algorithm;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,14 +15,23 @@ import java.util.List;
  */
 public class RouteTableByMod extends RouteAlgorithm {
 
+    private static final Logger logger = LoggerFactory.getLogger(RouteTableByMod.class);
+
+
     /**
      * 预设的表列表。
      */
-    private List<RouteInfo> routeInfos;
+    private List<RouteInfo> routeInfos = new ArrayList<>();
 
     @Override
     public void config() {
-
+        String routeList = this.algorithmConfig.getParams().get("routeList");
+        for (String route : routeList.split(",")) {
+            String[] data = route.split("\\.");
+            if (data.length == 3) {
+                routeInfos.add(new RouteInfo(data[0], data[1], data[2]));
+            }
+        }
     }
 
     @Override
@@ -29,29 +41,17 @@ public class RouteTableByMod extends RouteAlgorithm {
         try {
             longValue = Long.parseLong(value);
         } catch (Exception e) {
+            logger.warn("指定的value:[{}]无法格式化为long!!!");
         }
 
         if (longValue == -1) {
-            routeInfo = routeInfos.get(0);
+            routeInfo = routeInfos.get(0).copy();
         } else {
-            routeInfo = routeInfos.get((int) (longValue % routeInfos.size()));
+            routeInfo = routeInfos.get((int) (longValue % routeInfos.size())).copy();
         }
         return routeInfo;
     }
 
-    /**
-     * 对于定制表来说，根本就无法匹配，直接返回所有表。
-     *
-     * @param tableConfig
-     * @param routeInfos 携带初始值的路由信息
-     * @param startValue
-     * @param endValue
-     * @return
-     */
-    @Override
-    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) {
-        return this.routeInfos;
-    }
 
     @Override
     public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {

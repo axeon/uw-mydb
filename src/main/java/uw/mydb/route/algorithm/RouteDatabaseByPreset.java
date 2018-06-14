@@ -22,7 +22,7 @@ public class RouteDatabaseByPreset extends RouteAlgorithm {
     /**
      * 强行指定的参数范围。
      */
-    private Map<String, String[]> params = new HashMap<>();
+    private Map<String, DataNode> params = new HashMap<>();
 
     /**
      * 参数配置。
@@ -32,18 +32,17 @@ public class RouteDatabaseByPreset extends RouteAlgorithm {
         for (Map.Entry<String, String> kv : algorithmConfig.getParams().entrySet()) {
             String[] data = kv.getValue().trim().split("\\.");
             if (data.length == 2) {
-                params.put(kv.getKey(), data);
+                params.put(kv.getKey(), new DataNode(data[0], data[1]));
             }
         }
     }
 
     @Override
     public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
-
-        String[] data = params.get(value);
+        DataNode data = params.get(value);
         if (data != null) {
-            routeInfo.setMysqlGroup(data[0]);
-            routeInfo.setDatabase(data[0]);
+            routeInfo.setMysqlGroup(data.getMysqlGroup());
+            routeInfo.setDatabase(data.getDatabase());
         }
         return routeInfo;
     }
@@ -57,9 +56,9 @@ public class RouteDatabaseByPreset extends RouteAlgorithm {
      */
     @Override
     public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
-        for (Map.Entry<String, String[]> kv : params.entrySet()) {
-            String[] data = kv.getValue();
-            RouteInfo routeInfo = new RouteInfo(data[0], data[1], tableConfig.getName());
+        for (Map.Entry<String, DataNode> kv : params.entrySet()) {
+            DataNode data = kv.getValue();
+            RouteInfo routeInfo = new RouteInfo(data.getMysqlGroup(), data.getDatabase(), tableConfig.getName());
             if (!routeInfos.contains(routeInfo)) {
                 routeInfos.add(routeInfo);
             }

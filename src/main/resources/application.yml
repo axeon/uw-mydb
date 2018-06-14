@@ -43,6 +43,40 @@ uw:
       saas:
         base-node: saas-host  # baseNode设置为mysqlgroup名，schema必须和database一致。
         tables:
+          alitrip_hotel_info:
+            route: saas
+          alitrip_hotel_product:
+            route: saas
+          alitrip_hotel_room:
+            route: saas
+          hotel_info_supplier:
+            route: supplier-hotel
+          hotel_order:
+            route: saas-date
+          hotel_order_detail:
+            route: saas-date
+          hotel_order_notifcation:
+            route: saas-date
+          hotel_order_people:
+            route: saas-date
+          hotel_product:
+            route: saas
+          hotel_product_plan:
+            route: saas
+          hotel_product_plan_price:
+            route: saas
+          hotel_product_plan_type:
+            route: saas
+          hotel_product_price:
+            route: saas
+          hotel_room:
+            route:
+          meituan_hotel_info:
+            route: saas
+          meituan_hotel_product:
+            route: saas
+          saas_file_info:
+            route: saas
           saas_mch_info:
             route: saas
           saas_mch_credit:
@@ -57,35 +91,13 @@ uw:
             route: saas
           saas_mch_receipt_log:
             route: saas
-          saas_file_info:
-            route: saas
-          hotel_order:
-            route: saas-date
-          hotel_order_detail:
-            route: saas-date
-          hotel_order_people:
-            route: saas-date
-          hotel_order_notifcation:
-            route: saas-date
-          hotel_product:
-            route: saas
-          hotel_product_plan:
-            route: saas
-          hotel_product_plan_price:
-            route: saas
-          hotel_product_plan_type:
-            route: saas
-          hotel_product_price:
-            route: saas
-          hotel_info_supplier:
-            route: supplier-hotel
     routes:
-      supplier-hotel:
+      supplier-hotel:  # 基于supplier_id自动分表的规则
         algorithms:
           - algorithm: uw.mydb.route.algorithm.RouteTableByAutoKey
             params: {"mysqlGroup": "saas-host","database": "saas_hotel"}
             route-key: supplier_id
-      saas:
+      saas:   # 基于按saas分库的规则
         data-nodes:
           - mysql-group: saas-host
             db-config: [saas_$1-2]
@@ -96,7 +108,7 @@ uw:
           - algorithm: uw.mydb.route.algorithm.RouteDatabaseByPreset
             params: {"10000": saas-host.saas_big }
             route-key: saas_id
-      saas-date:
+      saas-date:  # 基于按saas分库按月分表的规则
         data-nodes:
           - mysql-group: saas-host
             db-config: [saas_$1-2]
@@ -107,6 +119,6 @@ uw:
           - algorithm: uw.mydb.route.algorithm.RouteDatabaseByPreset
             params: {"10000": saas-host.saas_big }
             route-key: saas_id
-          - algorithm: uw.mydb.route.algorithm.RouteTableByDate
+          - algorithm: uw.mydb.route.algorithm.RouteTableByAutoDate
             params: {"format-pattern": "yyyyMM" }
             route-key: create_date

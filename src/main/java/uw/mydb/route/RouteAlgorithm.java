@@ -316,7 +316,6 @@ public abstract class RouteAlgorithm {
         public void putRangeStart(String value1) {
             type = RANGE;
             this.value1 = value1;
-            this.value2 = value2;
         }
 
         public void putRangeEnd(String value2) {
@@ -384,6 +383,11 @@ public abstract class RouteAlgorithm {
 
         public void setDatabase(String database) {
             this.database = database;
+        }
+
+        @Override
+        public String toString() {
+            return new StringBuilder().append(this.mysqlGroup).append('.').append(database).toString();
         }
     }
 

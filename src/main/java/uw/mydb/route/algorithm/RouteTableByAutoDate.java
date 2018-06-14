@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author axeon
  */
-public class RouteTableByDate extends RouteAlgorithm {
+public class RouteTableByAutoDate extends RouteAlgorithm {
 
     /**
      * 日期数据格式。
