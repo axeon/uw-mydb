@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 根据给定的日期，给出归属表名。
+ * 根据给定的日期，给出归属表名，支持动态自动建表。
  *  参数：
  *  date-pattern: 可以不指定，设置为日期来源格式
  *  format-pattern：格式化成的样式

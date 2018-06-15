@@ -6,7 +6,8 @@ import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
 
 /**
- * 根据mod来自动分配路由。
+ * 根据给定的long值，按照库数量直接mod分库。
+ * 要求value值必须为long类型。
  *
  * @author axeon
  */

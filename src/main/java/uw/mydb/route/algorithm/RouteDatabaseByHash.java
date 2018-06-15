@@ -8,7 +8,7 @@ import uw.mydb.util.ConsistentHash;
 
 /**
  * 根据给定值的HASH来分库，底层hash算法使用guava的murmurHash3。
- * 不考虑再映射问题了。
+ *  默认128个虚拟节点，建议以8的倍数来分库效果比较好。
  *
  * @author axeon
  */

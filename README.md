@@ -49,20 +49,35 @@ EXPLAIN
 
 # 分库分表算法
 ## RouteDatabaseByHash 哈希分库算法
-
+ * 根据给定值的HASH来分库，底层hash算法使用guava的murmurHash3。
+ *  默认128个虚拟节点，建议以8的倍数来分库效果比较好。
+## RouteDatabaseByMod 基于范围的分库算法
+ * 根据给定的long值，按照库数量直接mod分库。
+ * 要求value值必须为long类型。
 ## RouteDatabaseByRange 基于范围的分库算法
+ * 按照固定的long值range来路由。
+ * 参数：start:起始位置 range:分区大小
+##  RouteDatabaseByPreset 预设值的分库算法
+ * 根据预设信息设置表路由，此算法一般建立放在分表算法的最后，它会覆盖之前的配置。
+ * params：key=routeKey，value="mysqlGroup.database"
+## RouteTableByAutoDate 基于日期的分表算法
+ * 根据给定的日期，给出归属表名，支持动态自动建表。
+ *  参数：
+ *  date-pattern: 可以不指定，设置为日期来源格式
+ *  format-pattern：格式化成的样式
+## RouteTableByAutoKey 基于关键字的分表算法
+ * 根据给定的key，来判断是否存在表，如果没有表，则动态自动创建以key为后缀的表。。
+ * 需要在配置参数中配置mysqlGroup和database属性。
+### RouteTableByHash 基于代码的分表算法
+ * 基于hash的分表算法。
+ * 参数：routeList=mysqlGroup.database.table,mysqlGroup.database.table
+ ### RouteTableByMod 基于范围的分表算法
+ * 根据给定的long值，按照表数量直接mod分表。
+ * 参数：routeList=mysqlGroup.database.table,mysqlGroup.database.table
+ ### RouteTableByPresent基于范围的分表算法
+ * 按照预定分表规则分表。
+ * 参数：key=mysqlGroup.database.table
 
-### range 基于范围分库
-
-##  RouteByPreset 预设值算法
-preset可以覆盖hash/range的值
-
-## RouteTableByDate 基于日期的分表算法
-可以合用
-### RouteTableByCode 基于代码的分表算法
-独立使用
-### RouteTableByCode 基于范围的分表算法
-独立使用
 
 # 支持的API
 - /api/stats/run/server 服务器运行期信息
