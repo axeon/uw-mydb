@@ -36,6 +36,12 @@ public class RouteManager {
             List<MydbConfig.DataNodeConfig> dataNodeConfigs = routeConfig.getDataNodes();
             List<MydbConfig.AlgorithmConfig> algorithmConfigs = routeConfig.getAlgorithms();
             ArrayList<RouteAlgorithm> routeAlgorithms = new ArrayList<>();
+            if (routeConfig.getParent() != null) {
+                if (!routeAlgorithmMap.containsKey(routeConfig.getParent())) {
+                    logger.error("RouteConfig[{}]未找到指定的父级配置[{}]", routeConfig.getName(), routeConfig.getParent());
+                }
+                routeAlgorithms.addAll(routeAlgorithmMap.get(routeConfig.getParent()));
+            }
             for (MydbConfig.AlgorithmConfig algorithmConfig : algorithmConfigs) {
                 try {
                     Class clazz = Class.forName(algorithmConfig.getAlgorithm());

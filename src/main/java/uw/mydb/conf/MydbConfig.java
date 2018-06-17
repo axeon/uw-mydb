@@ -639,14 +639,19 @@ public class MydbConfig {
     }
 
     /**
-     * 分表规则配置。
+     * 路由规则配置。
      */
     public static class RouteConfig {
 
         /**
-         * 分库分表名称。
+         * 路由配置名称。
          */
         private String name;
+
+        /**
+         * 上级路由名称，会继承上级路由的信息，只能继承一级。
+         */
+        private String parent;
 
         /**
          * 分布的节点。如果是单表，可以指向单个dataNode，此时不分表。
@@ -665,6 +670,14 @@ public class MydbConfig {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public String getParent() {
+            return parent;
+        }
+
+        public void setParent(String parent) {
+            this.parent = parent;
         }
 
         public List<DataNodeConfig> getDataNodes() {
