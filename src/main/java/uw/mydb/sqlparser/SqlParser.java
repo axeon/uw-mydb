@@ -904,15 +904,20 @@ public class SqlParser {
             //此处强行指定路由。
             if ("*".equalsIgnoreCase(hintRouteInfo)) {
                 // 匹配全部路由
-                if (mainRouteData.tableConfig.getRoute() != null) {
-                    List<RouteAlgorithm.RouteInfo> list = RouteManager.getAllRouteList(mainRouteData.tableConfig);
-                    RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
-                    routeInfoData.setAll(new HashSet<>(list));
-                    mainRouteData.routeInfoData = routeInfoData;
-                } else {
+                if (mainRouteData.tableConfig.getRoute() == null) {
                     this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_INFO, "NO TABLE ROUTE INFO: " + sql);
                     return;
                 }
+                List<RouteAlgorithm.RouteInfo> list = null;
+                try {
+                    list = RouteManager.getAllRouteList(mainRouteData.tableConfig);
+                } catch (RouteAlgorithm.RouteException e) {
+                    this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_INFO, "NO TABLE ROUTE INFO: " + sql);
+                    return;
+                }
+                RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
+                routeInfoData.setAll(new HashSet<>(list));
+                mainRouteData.routeInfoData = routeInfoData;
             } else {
                 //指定路由列表
                 HashSet<RouteAlgorithm.RouteInfo> list = new HashSet<>();
@@ -942,7 +947,13 @@ public class SqlParser {
                 //此时Table是有Route的
                 if (!mainRouteData.routeKeyData.isEmptyValue()) {
                     //此时说明是sharding配置表。
-                    mainRouteData.routeInfoData = RouteManager.calculate(mainRouteData.tableConfig, mainRouteData.routeKeyData);
+
+                    try {
+                        mainRouteData.routeInfoData = RouteManager.calculate(mainRouteData.tableConfig, mainRouteData.routeKeyData);
+                    } catch (RouteAlgorithm.RouteException e) {
+                        this.parseResult.setErrorInfo(ErrorCode.ERR_ROUTE_CALC, "ROUTE CALC ERROR: " + e.getMessage() + ", SQL: " + sql);
+                        return;
+                    }
                 } else {
                     //在路由名单里的，不指定参数，根据匹配类型确定转发。
                     switch (mainRouteData.tableConfig.getMatchType()) {
@@ -955,12 +966,17 @@ public class SqlParser {
                         case MATCH_ALL:
                             //匹配全部路由
                             RouteAlgorithm.RouteInfoData routeInfoData2 = new RouteAlgorithm.RouteInfoData();
-                            routeInfoData2.setAll(new HashSet<>(RouteManager.getAllRouteList(mainRouteData.tableConfig)));
+                            try {
+                                routeInfoData2.setAll(new HashSet<>(RouteManager.getAllRouteList(mainRouteData.tableConfig)));
+                            } catch (RouteAlgorithm.RouteException e) {
+                                this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_INFO, "NO TABLE ROUTE INFO: " + sql);
+                                return;
+                            }
                             mainRouteData.routeInfoData = routeInfoData2;
                             break;
                         default:
                             //直接报错吧。
-                            this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_KEY, "NO ROUTE KEY: " + sql);
+                            this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_KEY, "NO ROUTE KEY[ " + mainRouteData.routeKeyData.keyString() + "]:" + sql);
                             return;
                     }
                 }
@@ -976,7 +992,12 @@ public class SqlParser {
                 for (RouteData routeData : routeDataMap.values()) {
                     if (routeData.routeInfoData == null) {
                         if (routeData.routeKeyData != null) {
-                            routeData.routeInfoData = RouteManager.calculate(routeData.tableConfig, routeData.routeKeyData);
+                            try {
+                                routeData.routeInfoData = RouteManager.calculate(routeData.tableConfig, routeData.routeKeyData);
+                            } catch (RouteAlgorithm.RouteException e) {
+                                this.parseResult.setErrorInfo(ErrorCode.ERR_ROUTE_CALC, "ROUTE CALC ERROR: " + e.getMessage() + ", SQL: " + sql);
+                                return;
+                            }
                         }
                     }
                 }
@@ -994,7 +1015,6 @@ public class SqlParser {
             sqlInfo.setMysqlGroup(schema.getBaseNode());
             sqlInfo.setDatabase(schema.getName());
             this.parseResult.setSqlInfo(sqlInfo);
-            this.parseResult.setSingle(true);
             return;
         }
         //每个mainRouteInfoData对应一个mysqlGroup
@@ -1006,6 +1026,9 @@ public class SqlParser {
                 if (i == 0) {
                     //把主表路由加上。
                     RouteAlgorithm.RouteInfo ri = mainRouteData.routeInfoData.getRouteInfo();
+                    if (ri == null) {
+                        //FIXME axeon@2018/6/16  此处有异常，应妥善处理。
+                    }
                     sqlInfo.appendSql(ri.getDatabase()).appendSql(".").appendSql(ri.getTable());
                     sqlInfo.setMysqlGroup(ri.getMysqlGroup());
                     sqlInfo.setDatabase(ri.getDatabase());

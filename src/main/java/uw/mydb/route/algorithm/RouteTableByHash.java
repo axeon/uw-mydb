@@ -45,12 +45,17 @@ public class RouteTableByHash extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
-        return consistentHash.get(value).copy();
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
+        RouteInfo route = consistentHash.get(value);
+        if (route == null) {
+            logger.warn("给定的value:[{}]无法匹配hash节点", value);
+            throw new RouteException("无法匹配hash节点！");
+        }
+        return route.copy();
     }
 
     @Override
-    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
         return this.routeInfos;
     }
 

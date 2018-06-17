@@ -16,7 +16,7 @@ public class GlobalConstants {
      * mycat服务器版本。
      * 第一句一定要是mysql的版本号，否则很多客户端无法连接。
      **/
-    public static final byte[] SERVER_VERSION = "5.7.20-uw-mydb-1.0-20170806210402".getBytes();
+    public static final byte[] SERVER_VERSION = "8.0.11-uw-mydb-1.0-20180616".getBytes();
 
     public static final String SINGLE_NODE_HEARTBEAT_SQL = "select 1";
 

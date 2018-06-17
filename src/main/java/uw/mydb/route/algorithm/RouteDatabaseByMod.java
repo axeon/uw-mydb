@@ -26,20 +26,20 @@ public class RouteDatabaseByMod extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
         long longValue = -1L;
 
         try {
             longValue = Long.parseLong(value);
         } catch (Exception e) {
-            logger.warn("指定的value:[{}]无法格式化为long!!!");
+            logger.warn("指定的value:[{}]无法格式化为long!!!", value);
+            throw new RouteException("指定的value无法格式化为long!");
         }
+        longValue = Math.abs(longValue);
+        DataNode node = dataNodes.get((int) (longValue % dataNodes.size()));
+        routeInfo.setMysqlGroup(node.getMysqlGroup());
+        routeInfo.setDatabase(node.getDatabase());
 
-        if (longValue > -1) {
-            DataNode node = dataNodes.get((int) (longValue % dataNodes.size()));
-            routeInfo.setMysqlGroup(node.getMysqlGroup());
-            routeInfo.setDatabase(node.getDatabase());
-        }
         return routeInfo;
     }
 

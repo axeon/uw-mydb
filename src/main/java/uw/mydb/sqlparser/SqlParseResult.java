@@ -41,9 +41,9 @@ public class SqlParseResult {
     private String errorMessage;
 
     /**
-     * 是否单一路由？
+     * 是否单一路由，默认为true。
      */
-    private Boolean isSingle;
+    private boolean isSingle = true;
 
     /**
      * 是否主库操作。

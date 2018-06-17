@@ -19,12 +19,13 @@ public class MydbConfigManager {
 
 
     /**
-     * DAO配置表.
+     *  配置表.
      */
     private static MydbConfig config = new MydbConfig();
 
 
     /**
+     *  提供外部访问的配置获取方法。
      * @return the config
      */
     public static MydbConfig getConfig() {

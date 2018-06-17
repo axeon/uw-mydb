@@ -28,8 +28,12 @@ public class RouteDatabaseByHash extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
         DataNode node = consistentHash.get(value);
+        if (node == null) {
+            logger.warn("指定的value:[{}]无法格式化为long!!!", value);
+            throw new RouteException("无法匹配hash节点！");
+        }
         routeInfo.setMysqlGroup(node.getMysqlGroup());
         routeInfo.setDatabase(node.getDatabase());
         return routeInfo;

@@ -176,9 +176,9 @@ public class StatsFactory {
     /**
      * 统计慢sql。
      */
-    public static void statsSlowSql(String client, String schema, String sql, long exeTime, long exeDate) {
+    public static void statsSlowSql(String client, String schema, String sql, int routeSize, int rowsCount, long sendBytes, long recvBytes, long exeTime, long exeDate) {
         if (exeTime > config.getSlowQueryTimeout()) {
-            SlowSql slowSql = new SlowSql(client, schema, sql, exeTime, exeDate);
+            SlowSql slowSql = new SlowSql(client, schema, sql, routeSize, rowsCount, sendBytes, recvBytes, exeTime, exeDate);
         }
     }
 

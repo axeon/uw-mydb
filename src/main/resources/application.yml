@@ -50,12 +50,12 @@ uw:
           alitrip_hotel_room:
             route: saas
           hotel_info_supplier:
-            route: supplier-hotel
+            route: hotel-supplier
           hotel_order:
             route: saas-date
           hotel_order_detail:
             route: saas-date
-          hotel_order_notifcation:
+          hotel_order_notification:
             route: saas-date
           hotel_order_people:
             route: saas-date
@@ -70,7 +70,7 @@ uw:
           hotel_product_price:
             route: saas
           hotel_room:
-            route:
+            route: hotel-room
           meituan_hotel_info:
             route: saas
           meituan_hotel_product:
@@ -92,11 +92,6 @@ uw:
           saas_mch_receipt_log:
             route: saas
     routes:
-      supplier-hotel:  # 基于supplier_id自动分表的规则
-        algorithms:
-          - algorithm: uw.mydb.route.algorithm.RouteTableByAutoKey
-            params: {"mysqlGroup": "saas-host","database": "saas_hotel"}
-            route-key: supplier_id
       saas:   # 基于按saas分库的规则
         data-nodes:
           - mysql-group: saas-host
@@ -122,3 +117,13 @@ uw:
           - algorithm: uw.mydb.route.algorithm.RouteTableByAutoDate
             params: {"format-pattern": "yyyyMM" }
             route-key: create_date
+      hotel-room:  # 基于supplier_id自动分表的规则
+        algorithms:
+          - algorithm: uw.mydb.route.algorithm.RouteTableByHash
+            params: {"routeList": "saas-host.saas.hotel_room_1,saas-host.saas.hotel_room_2,saas-host.saas.hotel_room_3,saas-host.saas.hotel_room_4,saas-host.saas.hotel_room_5,saas-host.saas.hotel_room_6,saas-host.saas.hotel_room_7,saas-host.saas.hotel_room_8"}
+            route-key: hotel_id
+      hotel-supplier:  # 基于supplier_id自动分表的规则
+        algorithms:
+          - algorithm: uw.mydb.route.algorithm.RouteTableByAutoKey
+            params: {"mysqlGroup": "saas-host","database": "saas_hotel"}
+            route-key: supplier_id

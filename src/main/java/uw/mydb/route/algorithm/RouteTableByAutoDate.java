@@ -58,7 +58,7 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
         String text = null;
         //优先选择快速格式化
         if (DATE_PATTERN == null && FORMAT_PATTERN_CODE != null) {
@@ -77,7 +77,7 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
     }
 
     @Override
-    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) {
+    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) throws RouteException {
         List<String> list = new ArrayList<>();
         LocalDateTime startDate, endDate;
         if (DATE_PATTERN == null) {
@@ -123,7 +123,7 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
      * @return
      */
     @Override
-    public RouteInfo getDefaultRoute(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo) {
+    public RouteInfo getDefaultRoute(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo) throws RouteException {
         if (routeInfo.checkValid()) {
             //此处有性能问题，最好缓存当前时间
             String now = LocalDateTime.now().format(DATE_PATTERN_DEFAULT);
@@ -143,7 +143,7 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
      * @return
      */
     @Override
-    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
         List<String> list = new ArrayList<>();
         LocalDate today = LocalDate.now();
         list.add(today.format(FORMAT_PATTERN));

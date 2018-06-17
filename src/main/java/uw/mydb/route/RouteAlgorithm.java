@@ -2,6 +2,7 @@ package uw.mydb.route;
 
 import uw.mydb.conf.MydbConfig;
 
+import java.security.PrivilegedActionException;
 import java.util.*;
 
 /**
@@ -68,7 +69,7 @@ public abstract class RouteAlgorithm {
      * @param value       分表数值
      * @return 修正后的路由信息
      */
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
         throw new UnsupportedOperationException();
     }
 
@@ -80,7 +81,7 @@ public abstract class RouteAlgorithm {
      * @param routeInfos  携带初始值的路由信息
      * @return 修正后的路由信息
      */
-    public Map<String, RouteInfo> calculate(MydbConfig.TableConfig tableConfig, Map<String, RouteInfo> routeInfos, List<String> values) {
+    public Map<String, RouteInfo> calculate(MydbConfig.TableConfig tableConfig, Map<String, RouteInfo> routeInfos, List<String> values) throws RouteException {
         for (String value : values) {
             RouteInfo routeInfo = routeInfos.get(value);
             if (routeInfo == null) {
@@ -102,8 +103,8 @@ public abstract class RouteAlgorithm {
      * @param endValue
      * @return 表名列表
      */
-    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) {
-        throw new UnsupportedOperationException();
+    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) throws RouteException {
+        throw new RouteException("不支持范围计算!");
     }
 
 
@@ -114,7 +115,7 @@ public abstract class RouteAlgorithm {
      *
      * @return
      */
-    public RouteInfo getDefaultRoute(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo) {
+    public RouteInfo getDefaultRoute(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo) throws RouteException {
         return routeInfo;
     }
 
@@ -125,7 +126,7 @@ public abstract class RouteAlgorithm {
      *
      * @return
      */
-    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
         if (routeInfos == null || routeInfos.size() == 0) {
             for (DataNode dataNode : dataNodes) {
                 RouteInfo routeInfo = RouteInfo.newDataWithTable(tableConfig.getName());
@@ -142,7 +143,7 @@ public abstract class RouteAlgorithm {
     public static class RouteKeyData {
 
         /**
-         * value，用于优化内存占用。
+         * key，用于优化内存占用。
          */
         private String key;
 
@@ -156,6 +157,26 @@ public abstract class RouteAlgorithm {
          */
         private Map<String, RouteKeyValue> params;
 
+
+        /**
+         * 返回key列表。
+         *
+         * @return
+         */
+        public String keyString() {
+            if (key != null) {
+                return key;
+            } else {
+                StringBuilder sb = new StringBuilder();
+                for (String key : params.keySet()) {
+                    sb.append(key).append(",");
+                }
+                if (sb.charAt(sb.length() - 1) == ',') {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
+                return sb.toString();
+            }
+        }
 
         /**
          * 是否有数值？
@@ -242,6 +263,85 @@ public abstract class RouteAlgorithm {
                     return null;
                 }
             }
+        }
+    }
+
+    /**
+     * 用于存储路由算法异常。
+     */
+    public static class RouteException extends Exception {
+        /**
+         * Constructs a new exception with {@code null} as its detail message.
+         * The cause is not initialized, and may subsequently be initialized by a
+         * call to {@link #initCause}.
+         */
+        public RouteException() {
+        }
+
+        /**
+         * Constructs a new exception with the specified detail message.  The
+         * cause is not initialized, and may subsequently be initialized by
+         * a call to {@link #initCause}.
+         *
+         * @param message the detail message. The detail message is saved for
+         *                later retrieval by the {@link #getMessage()} method.
+         */
+        public RouteException(String message) {
+            super(message);
+        }
+
+        /**
+         * Constructs a new exception with the specified detail message and
+         * cause.  <p>Note that the detail message associated with
+         * {@code cause} is <i>not</i> automatically incorporated in
+         * this exception's detail message.
+         *
+         * @param message the detail message (which is saved for later retrieval
+         *                by the {@link #getMessage()} method).
+         * @param cause   the cause (which is saved for later retrieval by the
+         *                {@link #getCause()} method).  (A <tt>null</tt> value is
+         *                permitted, and indicates that the cause is nonexistent or
+         *                unknown.)
+         * @since 1.4
+         */
+        public RouteException(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        /**
+         * Constructs a new exception with the specified cause and a detail
+         * message of <tt>(cause==null ? null : cause.toString())</tt> (which
+         * typically contains the class and detail message of <tt>cause</tt>).
+         * This constructor is useful for exceptions that are little more than
+         * wrappers for other throwables (for example, {@link
+         * PrivilegedActionException}).
+         *
+         * @param cause the cause (which is saved for later retrieval by the
+         *              {@link #getCause()} method).  (A <tt>null</tt> value is
+         *              permitted, and indicates that the cause is nonexistent or
+         *              unknown.)
+         * @since 1.4
+         */
+        public RouteException(Throwable cause) {
+            super(cause);
+        }
+
+        /**
+         * Constructs a new exception with the specified detail message,
+         * cause, suppression enabled or disabled, and writable stack
+         * trace enabled or disabled.
+         *
+         * @param message            the detail message.
+         * @param cause              the cause.  (A {@code null} value is permitted,
+         *                           and indicates that the cause is nonexistent or unknown.)
+         * @param enableSuppression  whether or not suppression is enabled
+         *                           or disabled
+         * @param writableStackTrace whether or not the stack trace should
+         *                           be writable
+         * @since 1.7
+         */
+        public RouteException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+            super(message, cause, enableSuppression, writableStackTrace);
         }
     }
 

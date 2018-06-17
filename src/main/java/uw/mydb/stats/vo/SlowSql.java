@@ -1,7 +1,5 @@
 package uw.mydb.stats.vo;
 
-import java.util.Date;
-
 /**
  * 慢Sql统计。
  *
@@ -9,37 +7,57 @@ import java.util.Date;
  */
 public class SlowSql {
 
+
     /**
      * 发起客户端。
      */
     private String client;
-
     /**
      * 所在schema 。
      */
     private String schema;
-
     /**
      * 执行的sql。
      */
     private String sql;
 
     /**
+     * 路由大小。
+     */
+    private int routeSize;
+
+    /**
+     * 数据行计数。
+     */
+    protected int rowsCount;
+    /**
+     * 发送字节数。
+     */
+    protected long sendBytes;
+    /**
+     * 接收字节数。
+     */
+    protected long recvBytes;
+
+    /**
      * 执行毫秒数。
      */
     private long exeTime;
-
     /**
      * 执行时间。
      */
-    private Date exeDate;
+    private long exeDate;
 
-    public SlowSql(String client, String schema, String sql, long exeTime, long exeDate) {
+    public SlowSql(String client, String schema, String sql, int routeSize, int rowsCount, long sendBytes, long recvBytes, long exeTime, long exeDate) {
         this.client = client;
         this.schema = schema;
         this.sql = sql;
+        this.routeSize = routeSize;
+        this.rowsCount = rowsCount;
+        this.sendBytes = sendBytes;
+        this.recvBytes = recvBytes;
         this.exeTime = exeTime;
-        this.exeDate = new Date(exeDate);
+        this.exeDate = exeDate;
     }
 
     public String getClient() {
@@ -66,6 +84,38 @@ public class SlowSql {
         this.sql = sql;
     }
 
+    public int getRouteSize() {
+        return routeSize;
+    }
+
+    public void setRouteSize(int routeSize) {
+        this.routeSize = routeSize;
+    }
+
+    public int getRowsCount() {
+        return rowsCount;
+    }
+
+    public void setRowsCount(int rowsCount) {
+        this.rowsCount = rowsCount;
+    }
+
+    public long getSendBytes() {
+        return sendBytes;
+    }
+
+    public void setSendBytes(long sendBytes) {
+        this.sendBytes = sendBytes;
+    }
+
+    public long getRecvBytes() {
+        return recvBytes;
+    }
+
+    public void setRecvBytes(long recvBytes) {
+        this.recvBytes = recvBytes;
+    }
+
     public long getExeTime() {
         return exeTime;
     }
@@ -74,11 +124,11 @@ public class SlowSql {
         this.exeTime = exeTime;
     }
 
-    public Date getExeDate() {
+    public long getExeDate() {
         return exeDate;
     }
 
-    public void setExeDate(Date exeDate) {
+    public void setExeDate(long exeDate) {
         this.exeDate = exeDate;
     }
 }

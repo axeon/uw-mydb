@@ -41,12 +41,14 @@ public class RouteDatabaseByPreset extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
         DataNode data = params.get(value);
-        if (data != null) {
-            routeInfo.setMysqlGroup(data.getMysqlGroup());
-            routeInfo.setDatabase(data.getDatabase());
+        if (data == null) {
+            throw new RouteException("指定的value匹配路由数据!");
         }
+        routeInfo.setMysqlGroup(data.getMysqlGroup());
+        routeInfo.setDatabase(data.getDatabase());
+
         return routeInfo;
     }
 
@@ -58,7 +60,7 @@ public class RouteDatabaseByPreset extends RouteAlgorithm {
      * @return
      */
     @Override
-    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
         for (Map.Entry<String, DataNode> kv : params.entrySet()) {
             DataNode data = kv.getValue();
             RouteInfo routeInfo = new RouteInfo(data.getMysqlGroup(), data.getDatabase(), tableConfig.getName());

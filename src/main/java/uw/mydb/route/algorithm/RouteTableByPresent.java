@@ -37,19 +37,18 @@ public class RouteTableByPresent extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
         RouteInfo route = routeMap.get(value);
-
         if (route == null) {
             logger.error("value:[{}]无法找到匹配的路由信息！");
-        } else {
-            routeInfo = route.copy();
+            throw new RouteException("指定的value无法匹配路由数据!");
         }
+        routeInfo = route.copy();
         return routeInfo;
     }
 
     @Override
-    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
         return new ArrayList<>(this.routeMap.values());
     }
 

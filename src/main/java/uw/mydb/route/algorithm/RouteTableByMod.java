@@ -39,26 +39,24 @@ public class RouteTableByMod extends RouteAlgorithm {
     }
 
     @Override
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
         long longValue = -1L;
 
         try {
             longValue = Long.parseLong(value);
         } catch (Exception e) {
-            logger.warn("指定的value:[{}]无法格式化为long!!!");
+            logger.warn("指定的value:[{}]无法格式化为long!!!", value);
+            throw new RouteException("指定的value无法格式化为long!");
         }
 
-        if (longValue == -1) {
-            routeInfo = routeInfos.get(0).copy();
-        } else {
-            routeInfo = routeInfos.get((int) (longValue % routeInfos.size())).copy();
-        }
+        longValue = Math.abs(longValue);
+        routeInfo = routeInfos.get((int) (longValue % routeInfos.size())).copy();
         return routeInfo;
     }
 
 
     @Override
-    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) {
+    public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
         return this.routeInfos;
     }
 

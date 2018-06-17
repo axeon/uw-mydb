@@ -585,8 +585,10 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         //开始统计数据了。
         this.exeTime = SystemClock.now() - lastReadTime;
         //开始统计。
-        StatsFactory.statsMydb(host, schema.getName(), routeResult == null ? "" : routeResult.getTable(), isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
+        StatsFactory.statsMydb(host, schema.getName(), routeResult.getTable(), isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
+        StatsFactory.statsSlowSql(host, schema.getName(), routeResult.getSql(), routeResult.isSingle() ? 1 : routeResult.getSqlInfos().size(), Math.max(dataRowsCount, affectRowsCount), sendBytes, recvBytes, exeTime, lastReadTime);
         //数据归零
+        routeResult = null;
         isMasterSql = false;
         isExeSuccess = true;
         this.exeTime = 0;

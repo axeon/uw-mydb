@@ -5,12 +5,12 @@ import uw.mydb.route.RouteAlgorithm;
 import uw.mydb.route.SchemaCheckService;
 
 /**
- * 根据给定的key，来判断是否存在表，如果没有表，则动态自动创建以key为后缀的表。。
+ * 直接将指定表重定向到指定datanode上去。
  * 需要在配置参数中配置mysqlGroup和database属性。
  *
  * @author axeon
  */
-public class RouteTableByAutoKey extends RouteAlgorithm {
+public class RouteTableByDataNode extends RouteAlgorithm {
 
     /**
      * mysql组。

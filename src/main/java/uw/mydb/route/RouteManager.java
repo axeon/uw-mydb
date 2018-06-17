@@ -47,7 +47,7 @@ public class RouteManager {
                         routeAlgorithms.add(algorithm);
                     }
                 } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error("算法类加载失败！" + e.getMessage(), e);
                 }
             }
             routeAlgorithmMap.put(routeConfig.getName(), routeAlgorithms);
@@ -95,6 +95,9 @@ public class RouteManager {
         }
         RouteAlgorithm.RouteKeyData keyData = new RouteAlgorithm.RouteKeyData();
         MydbConfig.RouteConfig routeConfig = config.getRoutes().get(tableConfig.getRoute());
+        if (routeConfig == null) {
+            return null;
+        }
         List<MydbConfig.AlgorithmConfig> algorithmConfigs = routeConfig.getAlgorithms();
         for (MydbConfig.AlgorithmConfig algorithmConfig : algorithmConfigs) {
             keyData.initKey(algorithmConfig.getRouteKey());
@@ -109,7 +112,7 @@ public class RouteManager {
      * @param keyData
      * @return
      */
-    public static RouteAlgorithm.RouteInfoData calculate(MydbConfig.TableConfig tableConfig, RouteAlgorithm.RouteKeyData keyData) {
+    public static RouteAlgorithm.RouteInfoData calculate(MydbConfig.TableConfig tableConfig, RouteAlgorithm.RouteKeyData keyData) throws RouteAlgorithm.RouteException {
         RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
         //构造空路由配置。
         RouteAlgorithm.RouteInfo routeInfo = RouteAlgorithm.RouteInfo.newDataWithTable(tableConfig.getName());
@@ -163,7 +166,7 @@ public class RouteManager {
      * @param tableConfig
      * @return
      */
-    public static List<RouteAlgorithm.RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig) {
+    public static List<RouteAlgorithm.RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig) throws RouteAlgorithm.RouteException {
         List<RouteAlgorithm> routeAlgorithms = getRouteAlgorithmList(tableConfig.getRoute());
         List<RouteAlgorithm.RouteInfo> routeInfo = new ArrayList<>();
         for (RouteAlgorithm routeAlgorithm : routeAlgorithms) {

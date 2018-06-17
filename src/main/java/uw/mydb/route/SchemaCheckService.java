@@ -97,25 +97,25 @@ public class SchemaCheckService {
             for (MydbConfig.SchemaConfig schemaConfig : schemaConfigMap.values()) {
                 //获得库创建信息。
                 if (!Strings.isEmpty(schemaConfig.getBaseNode())) {
-                    logger.debug("正在加载schema[{}]库创建信息...", schemaConfig.getName());
+                    logger.debug("loadSchemaScript[{}]库创建信息...", schemaConfig.getName());
                     new StringArrayListTask(schemaConfig.getBaseNode(), new LocalCmdCallback<ArrayList<String[]>>() {
                         @Override
                         public void onSuccess(ArrayList<String[]> strings) {
                             if (strings.size() > 0) {
                                 schemaConfig.setCreateSql(strings.get(0)[1]);
-                                logger.debug("加载schema[{}]库创建信息成功!", schemaConfig.getName());
+                                logger.debug("loadSchemaScript[{}]库创建信息成功!", schemaConfig.getName());
                             }
                         }
 
                         @Override
                         public void onFail(int errorNo, String message) {
-                            logger.debug("加载schema[{}]库创建信息报错: {}", schemaConfig.getName(), message);
+                            logger.debug("loadSchemaScript[{}]库创建信息报错: {}", schemaConfig.getName(), message);
 
                         }
                     }).setSql("SHOW CREATE DATABASE " + schemaConfig.getName()).run();
                     //获得表创建信息。
                     for (MydbConfig.TableConfig tableConfig : schemaConfig.getTables().values()) {
-                        logger.debug("正在加载schema[{}.{}]表创建信息...", schemaConfig.getBaseNode(), tableConfig.getName());
+                        logger.debug("loadSchemaScript[{}.{}.{}]表创建信息...", schemaConfig.getBaseNode(), schemaConfig.getName(), tableConfig.getName());
 
                         if (Strings.isEmpty(tableConfig.getCreateSql())) {
                             new StringArrayListTask(schemaConfig.getBaseNode(), new LocalCmdCallback<ArrayList<String[]>>() {
@@ -123,13 +123,13 @@ public class SchemaCheckService {
                                 public void onSuccess(ArrayList<String[]> strings) {
                                     if (strings.size() > 0) {
                                         tableConfig.setCreateSql(strings.get(0)[1]);
-                                        logger.debug("加载schema[{}.{}]表创建信息成功!", schemaConfig.getBaseNode(), tableConfig.getName());
+                                        logger.debug("loadSchemaScript[{}.{}.{}]表创建信息成功!", schemaConfig.getBaseNode(), schemaConfig.getName(), tableConfig.getName());
                                     }
                                 }
 
                                 @Override
                                 public void onFail(int errorNo, String message) {
-                                    logger.debug("加载schema[{}.{}]表创建信息报错: {}", schemaConfig.getBaseNode(), tableConfig.getName(), message);
+                                    logger.debug("loadSchemaScript[{}.{}.{}]表创建信息报错: {}", schemaConfig.getBaseNode(), schemaConfig.getName(), tableConfig.getName(), message);
                                 }
                             }).setSql("SHOW CREATE TABLE " + schemaConfig.getName() + "." + tableConfig.getName()).run();
                         }
@@ -166,7 +166,7 @@ public class SchemaCheckService {
                                 public void onSuccess(ArrayList<String> strings) {
                                     for (String table : strings) {
                                         setSchemaStatus(groupName, database, table);
-                                        logger.debug("正在加载数据表[{}.{}.{}]信息...", groupName, database, table);
+                                        logger.trace("正在加载数据表[{}.{}.{}]信息...", groupName, database, table);
                                     }
                                 }
 
@@ -194,7 +194,7 @@ public class SchemaCheckService {
      * 检查并创建表。
      */
     public static void checkAndCreateTable(MydbConfig.TableConfig tableConfig, RouteAlgorithm.RouteInfo routeInfo) {
-        if (!checkSchemaExists(routeInfo.getMysqlGroup(), routeInfo.getDatabase(), tableConfig.getName())) {
+        if (!checkSchemaExists(routeInfo.getMysqlGroup(), routeInfo.getDatabase(), routeInfo.getTable())) {
             //先检查库的情况。
             if (!checkSchemaExists(routeInfo.getMysqlGroup(), routeInfo.getDatabase(), null)) {
                 logger.info("开始自动建库{}.{}...", routeInfo.getMysqlGroup(), routeInfo.getDatabase());
@@ -251,10 +251,16 @@ public class SchemaCheckService {
         for (MydbConfig.SchemaConfig schemaConfig : schemaConfigMap.values()) {
             for (MydbConfig.TableConfig tableConfig : schemaConfig.getTables().values()) {
                 //检查算法情况。
-                List<RouteAlgorithm.RouteInfo> routeInfos = RouteManager.getAllRouteList(tableConfig);
-                for (RouteAlgorithm.RouteInfo routeInfo : routeInfos) {
-                    checkAndCreateTable(tableConfig, routeInfo);
+                List<RouteAlgorithm.RouteInfo> routeInfos = null;
+                try {
+                    routeInfos = RouteManager.getAllRouteList(tableConfig);
+                    for (RouteAlgorithm.RouteInfo routeInfo : routeInfos) {
+                        checkAndCreateTable(tableConfig, routeInfo);
+                    }
+                } catch (RouteAlgorithm.RouteException e) {
+                    logger.error("自动创建表错误：" + e.getMessage(), e);
                 }
+
             }
         }
     }

@@ -12,7 +12,7 @@ public interface ErrorCode {
     int ERR_NO_ROUTE_INFO = 3001;
     int ERR_NO_ROUTE_KEY = 3002;
     int ERR_NOT_SUPPORTED = 3003;
-    int ERR_FOUND_EXCEPTION = 3344;
+    int ERR_ROUTE_CALC = 3004;
 
 
     // mysql error code

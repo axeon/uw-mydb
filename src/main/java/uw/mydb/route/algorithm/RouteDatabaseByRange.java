@@ -37,33 +37,37 @@ public class RouteDatabaseByRange extends RouteAlgorithm {
             start = Long.parseLong(startString);
         } catch (Exception e) {
             logger.error("start:[{}]参数配置错误！", start);
+
         }
         try {
             range = Long.parseLong(rangeString);
         } catch (Exception e) {
             logger.error("range:[{}]参数配置错误！", range);
+
         }
     }
 
     @Override
-    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) {
+    public RouteInfo calculate(MydbConfig.TableConfig tableConfig, RouteInfo routeInfo, String value) throws RouteException {
 
         long longValue = -1L;
 
         try {
             longValue = Long.parseLong(value);
         } catch (Exception e) {
+            throw new RouteException("参数值错误，无法格式化为long类型！");
         }
 
         if (longValue == -1) {
             DataNode dataNode = dataNodes.get(0);
             routeInfo.setDataNode(dataNode);
             logger.error("calculate分库计算失败，参数值错误！");
+            throw new RouteException("calculate分库计算失败，参数值错误！");
         } else {
             int pos = (int) Math.ceil((longValue - start) / range);
-            if (pos >= dataNodes.size()) {
-                logger.error("calculate[{}]分库计算失败，节点计算越界{}>{}");
-                return null;
+            if (pos < 0 || pos >= dataNodes.size()) {
+                logger.error("calculate分库计算失败，节点计算越界!");
+                throw new RouteException("calculate分库计算失败，节点计算越界!");
             } else {
                 DataNode dataNode = dataNodes.get(pos);
                 routeInfo.setDataNode(dataNode);
@@ -73,23 +77,25 @@ public class RouteDatabaseByRange extends RouteAlgorithm {
     }
 
     @Override
-    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) {
+    public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) throws RouteException {
         long startNum = -1, endNum = -1;
         try {
             startNum = Long.parseLong(startValue);
         } catch (Exception e) {
+            throw new RouteException("指定的value无法格式化为long!");
         }
         try {
             endNum = Long.parseLong(endValue);
         } catch (Exception e) {
+            throw new RouteException("指定的value无法格式化为long!");
         }
         if (startNum == -1 || endNum == -1) {
             logger.warn("calculateRange[{}]分库计算失败，参数值[{}-{}]错误！");
-            return routeInfos;
+            throw new RouteException("分表参数错误!");
         }
         if (startNum > endNum) {
             logger.warn("calculateRange[{}]分库计算失败，起始值超越结束值{}>{}");
-            return routeInfos;
+            throw new RouteException("分表参数错误!");
         }
         int pos = (int) Math.ceil(((startNum - start) / range));
         int endPos = (int) Math.ceil(((endNum - start) / range));
@@ -98,6 +104,7 @@ public class RouteDatabaseByRange extends RouteAlgorithm {
         for (; pos <= endPos; pos++) {
             if (pos >= dataNodes.size()) {
                 logger.error("calculate[{}]分库计算失败，节点计算越界{}>{}");
+                throw new RouteException("节点计算越界!");
             } else {
                 DataNode dataNode = dataNodes.get(pos);
                 RouteInfo routeInfo = RouteInfo.newDataWithTable(tableConfig.getName());
