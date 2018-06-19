@@ -48,6 +48,9 @@ SHOW
 EXPLAIN
 
 # 分库分表算法
+## RouteDatabaseByKey 哈希分库算法
+ * 按照prefix+value值来路由到指定库。
+ * 参数：prefix:库名前缀。
 ## RouteDatabaseByHash 哈希分库算法
  * 根据给定值的HASH来分库，底层hash算法使用guava的murmurHash3。
  *  默认128个虚拟节点，建议以8的倍数来分库效果比较好。

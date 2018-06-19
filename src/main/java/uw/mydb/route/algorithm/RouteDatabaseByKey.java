@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 /**
  * 按照prefix+value值来路由到指定库。
- * <p>
  * 参数：prefix:库名前缀。
  *
  * @author axeon
