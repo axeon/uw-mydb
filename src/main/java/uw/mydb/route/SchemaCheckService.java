@@ -49,7 +49,6 @@ public class SchemaCheckService {
      */
     private static MydbConfig config = null;
 
-
     /**
      * 开启服务。
      */
@@ -62,19 +61,19 @@ public class SchemaCheckService {
                 public void run() {
                     loadSchemaScript();
                 }
-            }, 10, TimeUnit.SECONDS);
+            }, 30, TimeUnit.SECONDS);
             scheduledExecutorService.schedule(new Runnable() {
                 @Override
                 public void run() {
                     loadSchemaInfo();
                 }
-            }, 30, TimeUnit.SECONDS);
+            }, 60, TimeUnit.SECONDS);
             scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
                     autoCreateTable();
                 }
-            }, 60, 3600, TimeUnit.SECONDS);
+            }, 90, 3600, TimeUnit.SECONDS);
         }
     }
 
@@ -109,7 +108,7 @@ public class SchemaCheckService {
 
                         @Override
                         public void onFail(int errorNo, String message) {
-                            logger.debug("loadSchemaScript[{}]库创建信息报错: {}", schemaConfig.getName(), message);
+                            logger.error("loadSchemaScript[{}]库创建信息报错: {}", schemaConfig.getName(), message);
 
                         }
                     }).setSql("SHOW CREATE DATABASE " + schemaConfig.getName()).run();
@@ -129,7 +128,7 @@ public class SchemaCheckService {
 
                                 @Override
                                 public void onFail(int errorNo, String message) {
-                                    logger.debug("loadSchemaScript[{}.{}.{}]表创建信息报错: {}", schemaConfig.getBaseNode(), schemaConfig.getName(), tableConfig.getName(), message);
+                                    logger.error("loadSchemaScript[{}.{}.{}]表创建信息报错: {}", schemaConfig.getBaseNode(), schemaConfig.getName(), tableConfig.getName(), message);
                                 }
                             }).setSql("SHOW CREATE TABLE " + schemaConfig.getName() + "." + tableConfig.getName()).run();
                         }
@@ -166,13 +165,13 @@ public class SchemaCheckService {
                                 public void onSuccess(ArrayList<String> strings) {
                                     for (String table : strings) {
                                         setSchemaStatus(groupName, database, table);
-                                        logger.trace("正在加载数据表[{}.{}.{}]信息...", groupName, database, table);
+//                                        logger.trace("正在加载数据表[{}.{}.{}]信息...", groupName, database, table);
                                     }
                                 }
 
                                 @Override
                                 public void onFail(int errorNo, String message) {
-                                    logger.debug("加载数据库表[{}.{}]报错：{}...", groupName, database, message);
+                                    logger.error("加载数据库[{}.{}]报错：{}...", groupName, database, message);
 
                                 }
                             }).setSql("show tables from " + database).run();
@@ -207,13 +206,13 @@ public class SchemaCheckService {
                             setSchemaStatus(routeInfo.getMysqlGroup(), routeInfo.getDatabase(), null);
                             logger.info("自动建库{}.{}成功！", routeInfo.getMysqlGroup(), routeInfo.getDatabase());
                         } else {
-                            logger.warn("自动建库{}.{}失败！", routeInfo.getMysqlGroup(), routeInfo.getDatabase());
+                            logger.error("自动建库{}.{}失败！", routeInfo.getMysqlGroup(), routeInfo.getDatabase());
                         }
                     }
 
                     @Override
                     public void onFail(int errorNo, String message) {
-                        logger.warn("自动建库{}.{}失败！原因：{}", routeInfo.getMysqlGroup(), routeInfo.getDatabase(), message);
+                        logger.error("自动建库{}.{}失败！原因：{}", routeInfo.getMysqlGroup(), routeInfo.getDatabase(), message);
                     }
                 }).setSql("create database " + routeInfo.getDatabase()).run();
             }
@@ -222,7 +221,7 @@ public class SchemaCheckService {
             //盘整参数。
             String sql = tableConfig.getCreateSql();
             if (sql == null) {
-                logger.info("建表{}.{}.{}失败，未找到SQL信息...", routeInfo.getMysqlGroup(), routeInfo.getDatabase(), routeInfo.getTable());
+                logger.error("建表{}.{}.{}失败，未找到SQL信息...", routeInfo.getMysqlGroup(), routeInfo.getDatabase(), routeInfo.getTable());
                 return;
             }
             sql = sql.replaceFirst(tableConfig.getName(), routeInfo.getDatabase() + "`.`" + routeInfo.getTable());
@@ -237,7 +236,7 @@ public class SchemaCheckService {
 
                 @Override
                 public void onFail(int errorNo, String message) {
-                    logger.warn("自动建表{}.{}.{}失败！原因：{}", routeInfo.getMysqlGroup(), routeInfo.getDatabase(), routeInfo.getTable(), message);
+                    logger.error("自动建表{}.{}.{}失败！原因：{}", routeInfo.getMysqlGroup(), routeInfo.getDatabase(), routeInfo.getTable(), message);
                 }
             }).setSql(sql).run();
         }

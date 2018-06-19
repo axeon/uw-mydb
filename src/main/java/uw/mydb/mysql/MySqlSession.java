@@ -222,10 +222,14 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         long now = SystemClock.now();
         exeTime = (now - this.lastAccess);
         this.lastAccess = now;
+
+        //最后统计mysql执行信息。
         StatsFactory.statsMysql(mysqlService.getGroupName(), mysqlService.getName(), database, isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
+
         //再执行解绑
         this.sessionCallback.unbind();
         this.sessionCallback = null;
+
         //数据归零
         command = null;
         isMasterSql = false;
@@ -235,6 +239,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         this.affectRowsCount = 0;
         this.recvBytes = 0;
         this.sendBytes = 0;
+
         //最后归还链接
         this.mysqlService.requiteSession(this);
     }

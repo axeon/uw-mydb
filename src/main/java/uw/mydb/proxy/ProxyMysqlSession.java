@@ -428,7 +428,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         cmd.read(buf);
         String sql = new String(cmd.arg);
         if (logger.isTraceEnabled()) {
-            logger.trace("正在执行SQL: {}", sql);
+            logger.trace("接收到SQL: {}", sql);
         }
         //进行sql解析
         //根据解析结果判定，当前支持1.单实例执行；2.多实例执行

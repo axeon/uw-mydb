@@ -378,7 +378,6 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
     @Override
     public void addBagItem(int waiting) {
         if (pendingCreateCount.get() == 0) {
-            logger.info("waiting:{} - pendingCreateCount:{}>0", waiting, pendingCreateCount.get());
             addSessionExecutor.submit(SESSION_CREATOR);
         }
     }

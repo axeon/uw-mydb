@@ -81,32 +81,62 @@ public class StatsFactory {
         return mysqlStatsMap;
     }
 
+
     /**
      * 统计来自mydb的数据。
      */
-    public static void statsMydb(String clientIp, String schema, String table, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
+    public static final void statsMydb(StatsInfo stats) {
+        statsMydb(stats.info1, stats.info2, stats.info3, stats.isMasterSql, stats.isExeSuccess, stats.exeTime, stats.dataRowsCount, stats.affectRowsCount, stats.sendBytes, stats.recvBytes);
+    }
+
+    /**
+     * 统计来自mydb的数据。
+     */
+    public static final void statsMydb(String clientIp, String schema, String table, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
         //获得客户端统计表
-        SqlStatsPair csp = clientSqlStatsMap.computeIfAbsent(clientIp, s -> new SqlStatsPair(config.isClientMetrics(), config.getMetricService().isEnabled()));
+        SqlStatsPair csp = null;
+        if (config.isClientMetrics()) {
+            csp = clientSqlStatsMap.computeIfAbsent(clientIp, s -> new SqlStatsPair(config.isClientMetrics(), config.getMetricService().isEnabled()));
+        }
         //获得schema统计表。
-        SqlStatsPair ssp = schemaSqlStatsMap.computeIfAbsent(new StringBuilder().append(schema).append('.').append(table).toString(), s -> new SqlStatsPair(config.isSchemaMetrics(), config.getMetricService().isEnabled()));
+        SqlStatsPair ssp = null;
+        if (config.isSchemaMetrics()) {
+            ssp = schemaSqlStatsMap.computeIfAbsent(new StringBuilder(36).append(schema).append('.').append(table).toString(), s -> new SqlStatsPair(config.isSchemaMetrics(), config.getMetricService().isEnabled()));
+        }
 
         if (isMasterSql) {
             serverSqlStats.addSqlWriteCount(1);
-            csp.addSqlWriteCount(1);
-            ssp.addSqlWriteCount(1);
+            if (csp != null) {
+                csp.addSqlWriteCount(1);
+            }
+            if (ssp != null) {
+                ssp.addSqlWriteCount(1);
+            }
         } else {
             serverSqlStats.addSqlReadCount(1);
-            csp.addSqlReadCount(1);
-            ssp.addSqlReadCount(1);
+            if (csp != null) {
+                csp.addSqlReadCount(1);
+            }
+            if (ssp != null) {
+                ssp.addSqlReadCount(1);
+            }
         }
         if (isExeSuccess) {
             serverSqlStats.addExeSuccessCount(1);
-            csp.addExeSuccessCount(1);
-            ssp.addExeSuccessCount(1);
+            if (csp != null) {
+                csp.addExeSuccessCount(1);
+            }
+            if (ssp != null) {
+                ssp.addExeSuccessCount(1);
+            }
         } else {
             serverSqlStats.addExeFailureCount(1);
-            csp.addExeSuccessCount(1);
-            ssp.addExeSuccessCount(1);
+            if (csp != null) {
+                csp.addExeSuccessCount(1);
+            }
+            if (ssp != null) {
+                ssp.addExeSuccessCount(1);
+            }
         }
         serverSqlStats.addExeTime(exeTime);
         serverSqlStats.addDataRowsCount(dataRowsCount);
@@ -114,28 +144,38 @@ public class StatsFactory {
         serverSqlStats.addSendBytes(sendBytes);
         serverSqlStats.addRecvBytes(recvBytes);
 
-        csp.addExeTime(exeTime);
-        csp.addDataRowsCount(dataRowsCount);
-        csp.addAffectRowsCount(affectRowsCount);
-        csp.addSendBytes(sendBytes);
-        csp.addRecvBytes(recvBytes);
+        if (csp != null) {
+            csp.addExeTime(exeTime);
+            csp.addDataRowsCount(dataRowsCount);
+            csp.addAffectRowsCount(affectRowsCount);
+            csp.addSendBytes(sendBytes);
+            csp.addRecvBytes(recvBytes);
+        }
 
-        ssp.addExeTime(exeTime);
-        ssp.addDataRowsCount(dataRowsCount);
-        ssp.addAffectRowsCount(affectRowsCount);
-        ssp.addSendBytes(sendBytes);
-        ssp.addRecvBytes(recvBytes);
+        if (ssp != null) {
+            ssp.addExeTime(exeTime);
+            ssp.addDataRowsCount(dataRowsCount);
+            ssp.addAffectRowsCount(affectRowsCount);
+            ssp.addSendBytes(sendBytes);
+            ssp.addRecvBytes(recvBytes);
+        }
     }
 
     /**
      * 统计来源于mysql的数据。
      */
-    public static void statsMysql(String mysqlGroup, String mysql, String database, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
-        String mysqlHost = new StringBuilder(100).append(mysqlGroup).append('$').append(mysql).toString();
-        String mysqlDb = new StringBuilder(100).append('$').append(database).toString();
+    public static final void statsMysql(StatsInfo stats) {
+        statsMysql(stats.info1, stats.info2, stats.info3, stats.isMasterSql, stats.isExeSuccess, stats.exeTime, stats.dataRowsCount, stats.affectRowsCount, stats.sendBytes, stats.recvBytes);
+    }
+
+    /**
+     * 统计来源于mysql的数据。
+     */
+    public static final void statsMysql(String mysqlGroup, String mysql, String database, boolean isMasterSql, boolean isExeSuccess, long exeTime, int dataRowsCount, int affectRowsCount, long sendBytes, long recvBytes) {
         if (config.isMysqlMetrics()) {
+            StringBuilder mysqlHost = new StringBuilder(100).append(mysqlGroup).append('$').append(mysql);
             //获得mysql统计表
-            SqlStats msp = mysqlStatsMap.computeIfAbsent(mysqlHost, s -> new SqlStats());
+            SqlStats msp = mysqlStatsMap.computeIfAbsent(mysqlHost.toString(), s -> new SqlStats());
             if (isMasterSql) {
                 msp.addSqlWriteCount(1);
             } else {
@@ -153,6 +193,7 @@ public class StatsFactory {
             msp.addRecvBytes(recvBytes);
 
             if (config.getMetricService().isEnabled()) {
+                String mysqlDb = mysqlHost.append(mysqlHost).append('$').append(database).toString();
                 SqlStats mdsp = mysqlDbStatsMap.computeIfAbsent(mysqlDb, x -> new SqlStats());
                 if (isMasterSql) {
                     mdsp.addSqlWriteCount(1);
@@ -179,6 +220,7 @@ public class StatsFactory {
     public static void statsSlowSql(String client, String schema, String sql, int routeSize, int rowsCount, long sendBytes, long recvBytes, long exeTime, long exeDate) {
         if (exeTime > config.getSlowQueryTimeout()) {
             SlowSql slowSql = new SlowSql(client, schema, sql, routeSize, rowsCount, sendBytes, recvBytes, exeTime, exeDate);
+            //此处发送慢sql。
         }
     }
 
@@ -203,5 +245,6 @@ public class StatsFactory {
         });
         return list.stream().collect(Collectors.toMap(MySqlRunInfo::getName, Function.identity()));
     }
+
 
 }

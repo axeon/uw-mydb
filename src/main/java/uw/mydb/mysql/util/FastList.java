@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 /**
- * Fast list without range checking.
+ * 来自hikariCP的FastList，主要是去掉了range check来提升性能。
  *
  * @author Brett Wooldridge
  */
@@ -60,7 +60,6 @@ public final class FastList<T> implements List<T>, RandomAccess, Serializable {
             newElementData[size++] = element;
             elementData = newElementData;
         }
-
         return true;
     }
 

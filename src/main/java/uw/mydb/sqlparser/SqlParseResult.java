@@ -261,8 +261,9 @@ public class SqlParseResult {
             packet.command = MySqlPacket.CMD_QUERY;
             packet.arg = getNewSql().getBytes();
 
-            logger.debug("正在mysql端执行SQL: {}", getNewSql());
-
+            if (logger.isTraceEnabled()) {
+                logger.trace("MySQL执行: {}", getNewSql());
+            }
             return packet;
         }
     }

@@ -73,13 +73,13 @@ EXPLAIN
  * 需要在配置参数中配置mysqlGroup和database属性。
 ### RouteTableByHash 基于代码的分表算法
  * 基于hash的分表算法。
- * 参数：routeList=mysqlGroup.database.table,mysqlGroup.database.table
+ * 参数：routeList=mysqlGroup.database.info3,mysqlGroup.database.info3
  ### RouteTableByMod 基于范围的分表算法
  * 根据给定的long值，按照表数量直接mod分表。
- * 参数：routeList=mysqlGroup.database.table,mysqlGroup.database.table
+ * 参数：routeList=mysqlGroup.database.info3,mysqlGroup.database.info3
  ### RouteTableByPresent基于范围的分表算法
  * 按照预定分表规则分表。
- * 参数：key=mysqlGroup.database.table
+ * 参数：key=mysqlGroup.database.info3
 
 
 # 支持的API
@@ -87,5 +87,5 @@ EXPLAIN
 - /api/stats/run/mysql mysql运行期信息
 - /api/stats/sql/server 服务器sql统计信息
 - /api/stats/sql/mysql mysql sql统计信息
-- /api/stats/sql/schema schema sql统计信息
+- /api/stats/sql/info2 info2 sql统计信息
 - /api/stats/sql/client 客户端sql统计信息

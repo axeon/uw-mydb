@@ -26,14 +26,19 @@ import static uw.mydb.util.SystemClock.elapsedMillis;
  * @author axeon
  */
 public class ConcurrentBag<T extends ConcurrentBag.IConcurrentBagEntry> implements AutoCloseable {
+
     private static final Logger logger = LoggerFactory.getLogger(ConcurrentBag.class);
 
     private final CopyOnWriteArrayList<T> sharedList;
 
     private final ThreadLocal<List<T>> threadList;
+
     private final IBagStateListener listener;
+
     private final AtomicInteger waiters;
+
     private final SynchronousQueue<T> handoffQueue;
+
     private volatile boolean closed;
 
     /**
@@ -86,7 +91,6 @@ public class ConcurrentBag<T extends ConcurrentBag.IConcurrentBagEntry> implemen
                     do {
                         final T bagEntry = handoffQueue.poll(timeout, MILLISECONDS);
                         if (bagEntry != null && bagEntry.compareAndSet(IConcurrentBagEntry.STATE_NORMAL, IConcurrentBagEntry.STATE_USING)) {
-                            logger.info("borrow from handoffqueue");
                             addToThreadLocal(bagEntry);
                             retEntry = bagEntry;
                             break;
@@ -243,8 +247,7 @@ public class ConcurrentBag<T extends ConcurrentBag.IConcurrentBagEntry> implemen
 
 
     /**
-     * Get the number of threads pending (waiting) for an item from the
-     * bag to become available.
+     *  获得等待线程技术。
      *
      * @return the number of threads waiting for items from the bag
      */
@@ -253,7 +256,7 @@ public class ConcurrentBag<T extends ConcurrentBag.IConcurrentBagEntry> implemen
     }
 
     /**
-     * Get a count of the number of items in the specified state at the time of this call.
+     * 获得指定状态的对象。
      *
      * @param state the state of the items to count
      * @return a count of how many items in the bag are in the specified state
@@ -266,17 +269,6 @@ public class ConcurrentBag<T extends ConcurrentBag.IConcurrentBagEntry> implemen
             }
         }
         return count;
-    }
-
-    public int[] getStateCounts() {
-        final int[] states = new int[6];
-        for (IConcurrentBagEntry e : sharedList) {
-            ++states[e.getState()];
-        }
-        states[4] = sharedList.size();
-        states[5] = waiters.get();
-
-        return states;
     }
 
     /**
@@ -292,20 +284,6 @@ public class ConcurrentBag<T extends ConcurrentBag.IConcurrentBagEntry> implemen
         sharedList.forEach(entry -> logger.info(entry.toString()));
     }
 
-    /**
-     * Determine whether to use WeakReferences based on whether there is a
-     * custom ClassLoader implementation sitting between this class and the
-     * System ClassLoader.
-     *
-     * @return true if we should use WeakReferences in our ThreadLocals, false otherwise
-     */
-    private boolean useWeakThreadLocals() {
-        try {
-            return getClass().getClassLoader() != ClassLoader.getSystemClassLoader();
-        } catch (SecurityException se) {
-            return true;
-        }
-    }
 
     public interface IConcurrentBagEntry {
 
@@ -323,6 +301,7 @@ public class ConcurrentBag<T extends ConcurrentBag.IConcurrentBagEntry> implemen
          * 初始状态，此状态不可用
          */
         int STATE_INIT = 0;
+
         /**
          * 验证中状态，此状态不可用。
          */
@@ -331,6 +310,7 @@ public class ConcurrentBag<T extends ConcurrentBag.IConcurrentBagEntry> implemen
          * 正常状态。
          */
         int STATE_NORMAL = 2;
+
         /**
          * 使用中。。。
          */
