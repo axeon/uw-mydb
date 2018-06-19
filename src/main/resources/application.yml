@@ -99,7 +99,7 @@ uw:
             params: {prefix: "saas_"}
             route-key: saas_id
       saas-month:  # 基于按saas分库和按月分表的规则
-        parent: saas
+        parent: saas # 继承父级配置
         algorithms:
           - algorithm: uw.mydb.route.algorithm.RouteTableByAutoDate
             params: {"format-pattern": "yyyyMM" }
