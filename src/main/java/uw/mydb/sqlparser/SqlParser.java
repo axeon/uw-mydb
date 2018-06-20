@@ -300,8 +300,8 @@ public class SqlParser {
         if (lexer.token() == Token.IDENTIFIER) {
             //表名
             splitSubSql(lexer);
-            String table = lexer.stringVal();
-            putRouteData(table, null);
+            String tableName = lexer.stringVal();
+            putRouteData(null, tableName, null);
         }
         if (!lexer.isEOF()) {
             lexer.skipToEOF();
@@ -432,9 +432,9 @@ public class SqlParser {
                     break;
             }
             //explain 给schema默认数据。
-            RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
-            routeInfoData.setSingle(new RouteAlgorithm.RouteInfo(schema.getBaseNode(), schema.getName(), mainRouteData.tableConfig.getName()));
-            mainRouteData.routeInfoData = routeInfoData;
+//            RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
+//            routeInfoData.setSingle(new RouteAlgorithm.RouteInfo(schema.getBaseNode(), schema.getName(), mainRouteData.tableConfig.getName()));
+//            mainRouteData.routeInfoData = routeInfoData;
         }
 
     }
@@ -521,7 +521,7 @@ public class SqlParser {
     /**
      * 放置tableConfig。
      */
-    private void putRouteData(String tableName, String aliasName) {
+    private void putRouteData(String schemaName, String tableName, String aliasName) {
         RouteData routeData = getRouteData(tableName);
         //已经有了，直接返回。
         if (routeData != null) {
@@ -529,6 +529,7 @@ public class SqlParser {
         }
         //构造新的
         routeData = buildRouteData(tableName);
+        routeData.schemaName = schemaName;
         //优先放mainRouteData
         if (mainRouteData == null) {
             mainRouteData = routeData;
@@ -561,16 +562,18 @@ public class SqlParser {
     private void parseTableName(Lexer lexer) {
         if (lexer.token() == Token.IDENTIFIER) {
             splitSubSql(lexer);
-            String table = lexer.stringVal();
+            String schemaName = null;
+            String tableName = lexer.stringVal();
             lexer.nextToken();
             if (lexer.token() == Token.DOT) {
                 lexer.nextToken();
                 //刚刚是库名，现在是表名了
+                schemaName = tableName;
                 setLexerPos();
-                table = lexer.stringVal();
+                tableName = lexer.stringVal();
                 lexer.nextToken();
             }
-            putRouteData(table, null);
+            putRouteData(schemaName, tableName, null);
         }
     }
 
@@ -810,15 +813,16 @@ public class SqlParser {
                 case IDENTIFIER:
                     //此处截断sql
                     splitSubSql(lexer);
-                    String table = null, alias = null;
+                    String schemaName = null, tableName = null, aliasName = null;
                     //说明是表名，进入检查。
-                    table = lexer.stringVal();
+                    tableName = lexer.stringVal();
                     lexer.nextToken();
                     if (lexer.token() == Token.DOT) {
                         lexer.nextToken();
                         //刚刚是库名，现在是表名了
+                        schemaName = tableName;
                         setLexerPos();
-                        table = lexer.stringVal();
+                        tableName = lexer.stringVal();
                         lexer.nextToken();
                     }
                     if (lexer.token() == Token.AS) {
@@ -827,37 +831,41 @@ public class SqlParser {
                     }
                     if (lexer.token() == Token.IDENTIFIER) {
                         setLexerPos();
-                        alias = lexer.stringVal();
+                        aliasName = lexer.stringVal();
                     }
                     //注册表到routeData
-                    putRouteData(table, alias);
-                    lexer.skipTo(Token.WHERE, Token.JOIN, Token.COMMA);
+                    putRouteData(schemaName, tableName, aliasName);
+                    lexer.skipTo(Token.SET, Token.WHERE, Token.JOIN, Token.COMMA);
                     break;
                 case JOIN:
                     //此处截断sql
                     splitSubSql(lexer);
-                    String tableJoin = null, aliasJoin = null;
+                    String schemaJoin = null, tableJoin = null, aliasJoin = null;
                     //说明是表名，进入检查。
                     tableJoin = lexer.stringVal();
                     lexer.nextToken();
                     if (lexer.token() == Token.DOT) {
                         lexer.nextToken();
                         //刚刚是库名，现在是表名了
+                        schemaJoin = tableJoin;
+                        setLexerPos();
                         tableJoin = lexer.stringVal();
                         lexer.nextToken();
                     }
                     //判断as
                     if (lexer.token() == Token.AS) {
+                        setLexerPos();
                         lexer.nextToken();
                     }
                     //判断alias
                     if (lexer.token() == Token.IDENTIFIER) {
+                        setLexerPos();
                         aliasJoin = lexer.stringVal();
                     }
-                    setLexerPos();
-                    putRouteData(tableJoin, aliasJoin);
+
+                    putRouteData(schemaJoin, tableJoin, aliasJoin);
                     //其他的就跳走吧，不管了。
-                    lexer.skipTo(Token.WHERE, Token.JOIN, Token.COMMA);
+                    lexer.skipTo(Token.SET, Token.WHERE, Token.JOIN, Token.COMMA);
                     break;
                 case SELECT:
                     parseSelect(lexer);
@@ -866,7 +874,7 @@ public class SqlParser {
                     break;
             }
             //如果发现时where，则跳出
-            if (lexer.token() == Token.WHERE) {
+            if (lexer.token() == Token.WHERE || lexer.token() == Token.SET) {
                 break;
             }
         }
@@ -981,9 +989,18 @@ public class SqlParser {
                     }
                 }
             } else {
-                //不在路由名单里的，匹配虚拟schema
+                //不在路由名单里的，匹配虚拟schema。
                 RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
-                routeInfoData.setSingle(new RouteAlgorithm.RouteInfo(schema.getBaseNode(), schema.getName(), mainRouteData.tableConfig.getName()));
+                String schemaName = mainRouteData.schemaName;
+                if (schemaName == null) {
+                    schemaName = schema.getName();
+                } else {
+                    //排除系统表。
+                    if (!schemaName.equalsIgnoreCase("information_schema") && !schemaName.equalsIgnoreCase("performance_schema") && !schemaName.equalsIgnoreCase("mysql") && !schemaName.equalsIgnoreCase("sys")) {
+                        schemaName = schema.getName();
+                    }
+                }
+                routeInfoData.setSingle(new RouteAlgorithm.RouteInfo(schema.getBaseNode(), schemaName, mainRouteData.tableConfig.getName()));
                 mainRouteData.routeInfoData = routeInfoData;
             }
 
@@ -1152,6 +1169,11 @@ public class SqlParser {
     }
 
     private static class RouteData {
+
+        /**
+         * 原始的schema信息。
+         */
+        String schemaName;
 
         /**
          * 表信息。
