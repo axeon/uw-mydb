@@ -82,31 +82,35 @@ public class RouteManager {
     /**
      * 获得匹配列的map。
      *
-     * @param tablename
-     * @return
-     */
-    public static RouteAlgorithm.RouteKeyData getParamMap(MydbConfig.SchemaConfig schema, String tablename) {
-        return getParamMap(getTableConfig(schema, tablename));
-    }
-
-    /**
-     * 获得匹配列的map。
-     *
      * @param tableConfig
      * @return
      */
-    public static RouteAlgorithm.RouteKeyData getParamMap(MydbConfig.TableConfig tableConfig) {
+    public static RouteAlgorithm.RouteKeyData getParamMap(RouteAlgorithm.RouteKeyData keyData, MydbConfig.TableConfig tableConfig) {
         if (tableConfig == null) {
             return null;
         }
-        RouteAlgorithm.RouteKeyData keyData = new RouteAlgorithm.RouteKeyData();
         MydbConfig.RouteConfig routeConfig = config.getRoutes().get(tableConfig.getRoute());
         if (routeConfig == null) {
             return null;
         }
+        //加载父级路由信息。
+        if (routeConfig.getParent() != null) {
+            MydbConfig.RouteConfig parentRoute = config.getRoutes().get(routeConfig.getParent());
+            if (parentRoute != null) {
+                List<MydbConfig.AlgorithmConfig> algorithmConfigs = parentRoute.getAlgorithms();
+                for (MydbConfig.AlgorithmConfig algorithmConfig : algorithmConfigs) {
+                    if (keyData.getValue(algorithmConfig.getRouteKey()) == null) {
+                        keyData.initKey(algorithmConfig.getRouteKey());
+                    }
+                }
+            }
+        }
+        //加载本级路由信息。
         List<MydbConfig.AlgorithmConfig> algorithmConfigs = routeConfig.getAlgorithms();
         for (MydbConfig.AlgorithmConfig algorithmConfig : algorithmConfigs) {
-            keyData.initKey(algorithmConfig.getRouteKey());
+            if (keyData.getValue(algorithmConfig.getRouteKey()) == null) {
+                keyData.initKey(algorithmConfig.getRouteKey());
+            }
         }
         return keyData;
     }

@@ -2039,8 +2039,12 @@ public class Lexer {
         this.token = token;
     }
 
-    public final String paramString() {
-        return subString(mark, bufPos);
+    public final String paramValueString() {
+        if (bufPos == 0) {
+            return stringVal;
+        } else {
+            return subString(mark, bufPos);
+        }
     }
 
     public boolean hasComment() {

@@ -159,6 +159,19 @@ public abstract class RouteAlgorithm {
 
 
         /**
+         * 检查是否有key。
+         *
+         * @return
+         */
+        public boolean checkKeyExists() {
+            if (key != null || params != null) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
          * 返回key列表。
          *
          * @return
@@ -179,21 +192,22 @@ public abstract class RouteAlgorithm {
         }
 
         /**
-         * 是否有数值？
+         * 有空数值，返回true。
          *
          * @return
          */
         public boolean isEmptyValue() {
-            boolean empty = false;
             if (value != null) {
-                empty = value.isEmpty();
+                return value.isEmpty();
             }
             if (params != null) {
                 for (RouteKeyValue rkv : params.values()) {
-                    empty = empty && rkv.isEmpty();
+                    if (rkv.isEmpty()) {
+                        return true;
+                    }
                 }
             }
-            return empty;
+            return false;
         }
 
         /**
@@ -241,6 +255,8 @@ public abstract class RouteAlgorithm {
                     if (params == null) {
                         params = new HashMap<>();
                         params.put(this.key, this.value);
+                        this.key = null;
+                        this.value = null;
                     }
                     params.put(key, new RouteKeyValue());
                 }
@@ -256,13 +272,18 @@ public abstract class RouteAlgorithm {
         public RouteKeyValue getValue(String key) {
             if (params != null) {
                 return params.get(key);
-            } else {
-                if (this.key.equals(key)) {
-                    return value;
-                } else {
-                    return null;
-                }
             }
+
+            if (this.key == null) {
+                return null;
+            }
+
+            if (this.key.equals(key)) {
+                return value;
+            } else {
+                return null;
+            }
+
         }
     }
 

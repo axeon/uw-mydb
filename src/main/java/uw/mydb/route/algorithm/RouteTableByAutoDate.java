@@ -12,9 +12,10 @@ import java.util.Map;
 
 /**
  * 根据给定的日期，给出归属表名，支持动态自动建表。
- *  参数：
- *  date-pattern: 可以不指定，设置为日期来源格式
- *  format-pattern：格式化成的样式
+ * 参数：
+ * date-pattern: 可以不指定，设置为日期来源格式
+ * format-pattern：格式化成的样式
+ *
  * @author axeon
  */
 public class RouteTableByAutoDate extends RouteAlgorithm {
@@ -78,9 +79,18 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
 
     @Override
     public List<RouteInfo> calculateRange(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos, String startValue, String endValue) throws RouteException {
+        if (startValue == null) {
+            startValue = endValue;
+        }
+        if (endValue == null) {
+            endValue = startValue;
+        }
+        if (startValue == null && endValue == null) {
+            return routeInfos;
+        }
         List<String> list = new ArrayList<>();
         LocalDateTime startDate, endDate;
-        if (DATE_PATTERN == null) {
+        if (DATE_PATTERN != null) {
             startDate = LocalDateTime.parse(startValue, DATE_PATTERN);
             endDate = LocalDateTime.parse(endValue, DATE_PATTERN);
         } else {
@@ -136,7 +146,6 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
     /**
      * 此方法用于返回创建表信息。
      * 对于日期类型，一般会向前进一天。
-     *
      *
      * @param tableConfig
      * @param routeInfos
