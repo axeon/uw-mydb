@@ -429,6 +429,16 @@ public abstract class RouteAlgorithm {
             }
         }
 
+        /**
+         * 针对范围运行有时候只有一个值来进行优化。
+         */
+        public void calcType() {
+            if (value1 == null || value2 == null) {
+                type = SINGLE;
+            }
+        }
+
+
         public void putValue(String value) {
             type = SINGLE;
             this.value1 = value;
