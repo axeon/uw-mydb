@@ -2,7 +2,7 @@
 <!DOCTYPE configuration>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <logger name="uw.mydb" level="TRACE"/>
+    <logger name="uw.mydb" level="INFO"/>
 
     <springProfile name="default">
         <include

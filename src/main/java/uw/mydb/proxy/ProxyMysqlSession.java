@@ -581,7 +581,6 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     @Override
     public void unbind() {
-        this.ctx.flush();
         //开始统计数据了。
         this.exeTime = SystemClock.now() - lastReadTime;
         //开始统计。
@@ -596,5 +595,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         this.affectRowsCount = 0;
         this.recvBytes = 0;
         this.sendBytes = 0;
+        //最后才能flush，否则会出问题！！！
+        this.ctx.flush();
     }
 }
