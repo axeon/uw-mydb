@@ -226,10 +226,11 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         //最后统计mysql执行信息。
         StatsFactory.statsMysql(mysqlService.getGroupName(), mysqlService.getName(), database, isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
 
-        //再执行解绑
-        this.sessionCallback.unbind();
-        this.sessionCallback = null;
-
+        if (this.sessionCallback != null) {
+            //再执行解绑
+            this.sessionCallback.unbind();
+            this.sessionCallback = null;
+        }
         //数据归零
         command = null;
         isMasterSql = false;
@@ -258,6 +259,9 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
                 break;
             case MySqlPacket.PACKET_ERROR:
                 //报错了，直接关闭吧。
+                ErrorPacket errorPacket = new ErrorPacket();
+                errorPacket.read(buf);
+                logger.error("MySQL[{}]服务器验证阶段报错{}:{}", mysqlService.getName(), errorPacket.errorNo, errorPacket.message);
                 setState(STATE_REMOVED);
                 trueClose();
                 break;
@@ -271,6 +275,16 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
      * @param buf
      */
     public void handleInitResponse(ChannelHandlerContext ctx, ByteBuf buf) {
+        byte status = buf.getByte(4);
+        if (status == MySqlPacket.PACKET_ERROR) {
+            ErrorPacket errorPacket = new ErrorPacket();
+            errorPacket.read(buf);
+            logger.error("MySQL[{}]服务器初始阶段报错{}:{}", mysqlService.getName(), errorPacket.errorNo, errorPacket.message);
+            //报错了，直接关闭吧。
+            setState(STATE_REMOVED);
+            trueClose();
+            return;
+        }
         HandshakePacket handshakePacket = new HandshakePacket();
         handshakePacket.read(buf);
         // 设置字符集编码

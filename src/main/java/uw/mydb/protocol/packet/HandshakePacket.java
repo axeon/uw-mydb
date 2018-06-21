@@ -2,6 +2,7 @@ package uw.mydb.protocol.packet;
 
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import uw.mydb.util.ByteBufUtils;
 
 /**
@@ -23,6 +24,10 @@ public class HandshakePacket extends MySqlPacket {
     public byte[] restOfScrambleBuff;
 
     public void read(ByteBuf buf) {
+        if (buf.readableBytes() < 28) {
+            System.out.println(ByteBufUtil.prettyHexDump(buf));
+        }
+
         packetLength = ByteBufUtils.readUB3(buf);
         packetId = buf.readByte();
         protocolVersion = buf.readByte();

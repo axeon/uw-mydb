@@ -21,6 +21,11 @@ public class MySqlDataHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         MySqlSession session = ctx.channel().attr(MYSQL_SESSION).get();
+        if (session == null) {
+            logger.error("MySqlSession未获取到！");
+            ctx.close();
+            return;
+        }
         //拿到消息
         ByteBuf buf = (ByteBuf) msg;
         switch (session.getState()) {
@@ -56,7 +61,7 @@ public class MySqlDataHandler extends ChannelInboundHandlerAdapter {
         super.exceptionCaught(ctx, cause);
         MySqlSession session = ctx.channel().attr(MYSQL_SESSION).get();
         ctx.close();
-        session.unbind();
+        session.trueClose();
     }
 
     /**
@@ -68,6 +73,7 @@ public class MySqlDataHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         MySqlSession session = ctx.channel().attr(MYSQL_SESSION).get();
+        session.trueClose();
         super.channelInactive(ctx);
     }
 

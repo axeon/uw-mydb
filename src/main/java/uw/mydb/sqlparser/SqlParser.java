@@ -407,6 +407,10 @@ public class SqlParser {
     private void parseExplain(Lexer lexer) {
         if (!lexer.isEOF()) {
             lexer.nextToken();
+            if (lexer.token() == HINT) {
+                parseHint(lexer);
+                lexer.nextToken();
+            }
             switch (lexer.token()) {
                 case HINT:
                 case COMMENT:

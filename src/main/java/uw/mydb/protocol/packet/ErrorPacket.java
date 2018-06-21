@@ -18,7 +18,7 @@ import uw.mydb.util.ByteBufUtils;
 public class ErrorPacket extends MySqlPacket {
 
     private static final byte SQLSTATE_MARKER = (byte) '#';
-    private static final byte[] DEFAULT_SQLSTATE = "HY000".getBytes();
+    private static final byte[] DEFAULT_SQLSTATE = "UW000".getBytes();
 
     public byte packetType = PACKET_ERROR;
     public int errorNo;
@@ -31,8 +31,6 @@ public class ErrorPacket extends MySqlPacket {
         packetId = buf.readByte();
         packetType = buf.readByte();
         errorNo = ByteBufUtils.readUB2(buf);
-        buf.readByte();
-        buf.readBytes(sqlState);
         message = ByteBufUtils.readStringWithNull(buf);
     }
 
