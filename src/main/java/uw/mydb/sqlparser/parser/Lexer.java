@@ -87,7 +87,7 @@ public class Lexer {
     public static String parameterize(String sql) {
         Lexer lexer = new Lexer(sql);
 
-        lexer.optimizedForParameterized = true; // optimized
+        lexer.optimizedForParameterized = true;
 
         lexer.nextToken();
 
@@ -120,10 +120,10 @@ public class Lexer {
                 case ERROR:
                     return sql;
                 case SELECT:
-                    buf.append("SELECT");
+                    buf.append("select");
                     break;
                 case UPDATE:
-                    buf.append("UPDATE");
+                    buf.append("update");
                     break;
                 default:
                     if (buf.length() != 0) {
@@ -137,6 +137,11 @@ public class Lexer {
         }
 
         return buf.toString();
+    }
+
+    public static void main(String[] args) {
+//        System.out.println(parameterize("insert into table (id,name) values (123,'12345')"));
+        System.out.println(parameterize("delete from table where id=123 and table=1234"));
     }
 
     public CommentHandler getCommentHandler() {
@@ -725,7 +730,7 @@ public class Lexer {
                     }
 
                     // QS_TODO ?
-                    if (isEOF()) { // JLS
+                    if (isEOF()) {
                         token = EOF;
                     } else {
                         lexError("illegal.char", String.valueOf((int) ch));
@@ -943,7 +948,6 @@ public class Lexer {
                 throw new ParserException("TODO. " + info());
         }
     }
-
 
     protected final void scanString() {
         {
@@ -1211,7 +1215,6 @@ public class Lexer {
         stringVal = new String(buf, 0, bufPos);
     }
 
-
     public void scanSharp() {
         if (ch != '#') {
             throw new ParserException("illegal stat. " + info());
@@ -1401,7 +1404,6 @@ public class Lexer {
         token = Token.VARIANT;
     }
 
-
     public void skipFirstHintsOrMultiCommentAndNextToken() {
         int starIndex = pos + 2;
 
@@ -1484,7 +1486,6 @@ public class Lexer {
             starIndex++;
         }
     }
-
 
     public void scanComment() {
         Token lastToken = this.token;
@@ -1611,7 +1612,6 @@ public class Lexer {
             return;
         }
     }
-
 
     private void scanMultiLineComment() {
         Token lastToken = this.token;
@@ -1824,7 +1824,6 @@ public class Lexer {
         }
     }
 
-
     public void scanNumber() {
         mark = pos;
 
@@ -1928,7 +1927,6 @@ public class Lexer {
         }
     }
 
-
     public void scanHexaDecimal() {
         mark = pos;
 
@@ -2002,7 +2000,6 @@ public class Lexer {
 
         out.append(text, mark, mark + bufPos);
     }
-
 
     public final List<String> readAndResetComments() {
         List<String> comments = this.comments;
