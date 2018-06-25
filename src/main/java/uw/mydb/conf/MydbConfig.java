@@ -209,7 +209,7 @@ public class MydbConfig {
         /**
          * 绑定的数据传输端口
          */
-        private int port = 8066;
+        private int port = 3300;
 
 
         public String getIp() {

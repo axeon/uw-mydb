@@ -20,5 +20,5 @@ ENV JAVA_OPTS=""
 ENV SPRING_BOOT_OPTS=""
 
 EXPOSE 8080
-EXPOSE 3309
+EXPOSE 3300
 ENTRYPOINT exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /$APP_NAME.jar $SPRING_BOOT_OPTS
