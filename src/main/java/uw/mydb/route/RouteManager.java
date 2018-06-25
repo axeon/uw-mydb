@@ -134,6 +134,8 @@ public class RouteManager {
         }
         for (RouteAlgorithm routeAlgorithm : routeAlgorithms) {
             RouteAlgorithm.RouteKeyValue value = keyData.getValue(routeAlgorithm.getAlgorithmConfig().getRouteKey());
+            //优化一下caclType。
+            value.calcType();
             if (value.getType() == RouteAlgorithm.RouteKeyValue.SINGLE) {
                 routeInfo = routeAlgorithm.calculate(tableConfig, routeInfo, value.getValue1());
                 routeInfoData.setSingle(routeInfo);

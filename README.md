@@ -48,7 +48,7 @@ SHOW
 EXPLAIN
 
 # 分库分表算法
-## RouteDatabaseByKey 哈希分库算法
+## RouteDatabaseByKey 按KEY分库算法
  * 按照prefix+value值来路由到指定库。
  * 参数：prefix:库名前缀。
 ## RouteDatabaseByHash 哈希分库算法
