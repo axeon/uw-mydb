@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: uw-mydb
+  cloud:
+    config:
+      name: uw-mydb
+      username: dev-user
+      password: mwUJUa8EXXo01a7VginM
+      failFast: true
+      discovery:
+        enabled: true
+        service-id: uw-config-server
+
+    consul:
+      host: 192.168.88.88
+      port: 8500
+      discovery:
+        health-check-critical-timeout: 10m
+        prefer-ip-address: true

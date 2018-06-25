@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    config:
+      profile: test
+    consul:
+      discovery:
+        instance-id: ${spring.application.name}:${spring.cloud.consul.discovery.ip-address}:${spring.cloud.consul.discovery.port}
