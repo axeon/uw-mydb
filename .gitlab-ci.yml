@@ -34,7 +34,7 @@ deploy_test:
     - master
   script:
     - VERSION=`grep '<version>' pom.xml |awk -F'>' '{print $2}'|awk -F"<" '{print $1}'|head -n 1`
-    - ssh root@192.168.88.88 "/root/gitlab-ci/deploy.sh ${CI_PROJECT_NAME} ${CI_PROJECT_NAME} ${VERSION} ${PORT} ${MEMORY}"
+    - ssh root@192.168.88.88 "/root/gitlab-ci/deploy-uw-mydb.sh ${CI_PROJECT_NAME} ${CI_PROJECT_NAME} ${VERSION} ${PORT} ${MEMORY}"
 
 # 部署生产服务器
 #deploy_production:
