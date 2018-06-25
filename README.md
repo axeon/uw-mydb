@@ -71,13 +71,13 @@ EXPLAIN
 ## RouteTableByAutoKey 基于关键字的分表算法
  * 根据给定的key，来判断是否存在表，如果没有表，则动态自动创建以key为后缀的表。。
  * 需要在配置参数中配置mysqlGroup和database属性。
-### RouteTableByHash 基于代码的分表算法
+## RouteTableByHash 基于代码的分表算法
  * 基于hash的分表算法。
  * 参数：routeList=mysqlGroup.database.info3,mysqlGroup.database.info3
- ### RouteTableByMod 基于范围的分表算法
+### RouteTableByMod 基于范围的分表算法
  * 根据给定的long值，按照表数量直接mod分表。
  * 参数：routeList=mysqlGroup.database.info3,mysqlGroup.database.info3
- ### RouteTableByPresent基于范围的分表算法
+## RouteTableByPresent基于范围的分表算法
  * 按照预定分表规则分表。
  * 参数：key=mysqlGroup.database.info3
 
