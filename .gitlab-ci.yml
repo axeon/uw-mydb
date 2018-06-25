@@ -1,0 +1,45 @@
+stages:
+  - build
+  - deploy_test
+  - deploy_production
+
+variables:
+  PORT: 29502
+  MEMORY: 2500
+  REGISTRY_PRODUCT_URL: "10.8.8.85:5000"
+  REGISTRY_TEST_URL: "docker.zowoyoo.com"
+
+# 编译
+build:
+  stage: build
+  only:
+    - develop
+    - master
+  script:
+    - VERSION=`grep '<version>' pom.xml |awk -F'>' '{print $2}'|awk -F"<" '{print $1}'|head -n 1`
+    - mvn clean package -U -Dmaven.test.skip=true
+    - docker rmi ${REGISTRY_PRODUCT_URL}/${CI_PROJECT_NAME}:${VERSION} || echo "${CI_PROJECT_NAME} not found."
+    - docker rmi  ${REGISTRY_TEST_URL}/zwy/${CI_PROJECT_NAME}:${VERSION} || echo "${CI_PROJECT_NAME} not found."
+    - docker build --no-cache --build-arg APP_VERSION=${VERSION} -t ${CI_PROJECT_NAME}:${VERSION}_${CI_RUNNER_ID} .
+    - docker tag ${CI_PROJECT_NAME}:${VERSION}_${CI_RUNNER_ID} ${REGISTRY_PRODUCT_URL}/${CI_PROJECT_NAME}:${VERSION}
+    - docker tag ${CI_PROJECT_NAME}:${VERSION}_${CI_RUNNER_ID}  ${REGISTRY_TEST_URL}/zwy/${CI_PROJECT_NAME}:${VERSION}
+    - docker push ${REGISTRY_TEST_URL}/zwy/${CI_PROJECT_NAME}:${VERSION}
+    #- docker push  ${REGISTRY_PRODUCT_URL}/${CI_PROJECT_NAME}:${VERSION}
+
+# 部署测试服务器
+deploy_test:
+  stage: deploy_test
+  only:
+    - develop
+    - master
+  script:
+    - VERSION=`grep '<version>' pom.xml |awk -F'>' '{print $2}'|awk -F"<" '{print $1}'|head -n 1`
+    - ssh root@192.168.88.88 "/root/gitlab-ci/deploy.sh ${CI_PROJECT_NAME} ${CI_PROJECT_NAME} ${VERSION} ${PORT} ${MEMORY}"
+
+# 部署生产服务器
+#deploy_production:
+#  stage: deploy_production
+#  only:
+#    - master
+#  script:
+#    - ssh root@10.8.8.85 docker
