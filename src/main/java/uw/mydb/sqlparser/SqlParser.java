@@ -686,7 +686,7 @@ public class SqlParser {
         parseTableInfo(lexer);
         //原计划在这做优化，结果子查询不能重写了
 
- //        if (!checkRouteKeyExists()) {
+        //        if (!checkRouteKeyExists()) {
 //            lexer.skipToEOF();
 //            splitSubSql(lexer);
 //            return;
@@ -969,6 +969,10 @@ public class SqlParser {
                 } catch (RouteAlgorithm.RouteException e) {
                     this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_INFO, "NO TABLE ROUTE INFO: " + sql);
                     return;
+                }
+                //对于要写数据，可能会是ddl操作或者重要操作，考虑也更新默认schema.
+                if (parseResult.isMaster()) {
+                    list.add(new RouteAlgorithm.RouteInfo(schema.getBaseNode(), schema.getName(), mainRouteData.tableConfig.getName()));
                 }
                 RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
                 routeInfoData.setAll(new HashSet<>(list));
