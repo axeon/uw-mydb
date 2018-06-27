@@ -1,6 +1,7 @@
 package uw.mydb.route;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.http.conn.routing.RouteInfo;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.LoggerFactory;
 import uw.mydb.conf.MydbConfig;
@@ -16,6 +17,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * 通过这个服务，自动检查schema，在数据库中建立对应的库表结构。
@@ -298,6 +300,34 @@ public class SchemaCheckService {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 检查指定的库表是否建立
+     *
+     * @param mysqlGroup
+     * @param database
+     * @param tableMatch 表名前缀
+     * @return
+     */
+    public static List<String> getTableList(String mysqlGroup, String database, String tableMatch) {
+        List<String> list = new ArrayList<>();
+
+        //group == null，直接返回
+        if (mysqlGroup == null) {
+            return list;
+        }
+        Map<String, Set<String>> dbMap = schemaMap.get(mysqlGroup);
+        if (dbMap == null) {
+            return list;
+        }
+        //database == null，说明不检测database，直接返回true吧
+        if (database == null) {
+            return list;
+        }
+        Set<String> tables = dbMap.get(database);
+        list = tables.stream().filter(x -> x.matches(tableMatch)).collect(Collectors.toList());
+        return list;
     }
 
     /**
