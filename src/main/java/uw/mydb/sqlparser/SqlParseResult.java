@@ -102,6 +102,7 @@ public class SqlParseResult {
      * @param errorMessage
      */
     public void setErrorInfo(int errorCode, String errorMessage) {
+        logger.warn("SQL_PARSE_ERR[{}]: {}", errorCode, errorMessage);
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
     }
