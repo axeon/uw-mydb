@@ -2,8 +2,6 @@
 <!DOCTYPE configuration>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <logger name="uw.mydb" level="TRACE"/>
-
     <springProfile name="default">
         <include
                 resource="org/springframework/boot/logging/logback/console-appender.xml"/>
