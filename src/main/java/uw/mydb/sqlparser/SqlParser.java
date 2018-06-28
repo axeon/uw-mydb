@@ -453,11 +453,12 @@ public class SqlParser {
         lexer.skipTo(Token.FROM);
         //解析表内容
         parseTableInfo(lexer);
-        if (!checkRouteKeyExists()) {
-            lexer.skipToEOF();
-            splitSubSql(lexer);
-            return;
-        }
+        //原计划在这做优化，结果子查询不能重写了
+//        if (!checkRouteKeyExists()) {
+//            lexer.skipToEOF();
+//            splitSubSql(lexer);
+//            return;
+//        }
         //跳到where关键字,查找匹配。
         lexer.skipTo(Token.WHERE);
         parseWhereInfo(lexer);
@@ -607,11 +608,12 @@ public class SqlParser {
         lexer.nextToken();
         //解析表名
         parseTableName(lexer);
-        if (!checkRouteKeyExists()) {
-            lexer.skipToEOF();
-            splitSubSql(lexer);
-            return;
-        }
+        //原计划在这做优化，结果子查询不能重写了
+//        if (!checkRouteKeyExists()) {
+//            lexer.skipToEOF();
+//            splitSubSql(lexer);
+//            return;
+//        }
         //如果有routeData匹配，采取匹配routeKeyData
         //此时走values的路
         if (lexer.token() == Token.LPAREN) {
@@ -682,11 +684,13 @@ public class SqlParser {
         lexer.check(Token.UPDATE);
         //解析表内容
         parseTableInfo(lexer);
-        if (!checkRouteKeyExists()) {
-            lexer.skipToEOF();
-            splitSubSql(lexer);
-            return;
-        }
+        //原计划在这做优化，结果子查询不能重写了
+
+        //        if (!checkRouteKeyExists()) {
+//            lexer.skipToEOF();
+//            splitSubSql(lexer);
+//            return;
+//        }
         //跳到where关键字
         lexer.skipTo(Token.WHERE);
         parseWhereInfo(lexer);
@@ -718,11 +722,12 @@ public class SqlParser {
         lexer.check(Token.FROM);
         //解析表内容
         parseTableInfo(lexer);
-        if (!checkRouteKeyExists()) {
-            lexer.skipToEOF();
-            splitSubSql(lexer);
-            return;
-        }
+        //原计划在这做优化，结果子查询不能重写了
+//        if (!checkRouteKeyExists()) {
+//            lexer.skipToEOF();
+//            splitSubSql(lexer);
+//            return;
+//        }
         //解析Where
         //跳到where关键字
         lexer.skipTo(Token.WHERE);
@@ -965,6 +970,10 @@ public class SqlParser {
                     this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_INFO, "NO TABLE ROUTE INFO: " + sql);
                     return;
                 }
+                //对于要写数据，可能会是ddl操作或者重要操作，考虑也更新默认schema.
+                if (parseResult.isMaster()) {
+                    list.add(new RouteAlgorithm.RouteInfo(schema.getBaseNode(), schema.getName(), mainRouteData.tableConfig.getName()));
+                }
                 RouteAlgorithm.RouteInfoData routeInfoData = new RouteAlgorithm.RouteInfoData();
                 routeInfoData.setAll(new HashSet<>(list));
                 mainRouteData.routeInfoData = routeInfoData;
@@ -1026,7 +1035,7 @@ public class SqlParser {
                             break;
                         default:
                             //直接报错吧。
-                            this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_KEY, "NO ROUTE KEY[ " + routeKeyData.keyString() + "]:" + sql);
+                            this.parseResult.setErrorInfo(ErrorCode.ERR_NO_ROUTE_KEY, "NO ROUTE KEY[" + routeKeyData.keyString() + "]:" + sql);
                             return;
                     }
                 }
@@ -1053,7 +1062,7 @@ public class SqlParser {
                         try {
                             routeData.routeInfoData = RouteManager.calculate(routeData.tableConfig, routeKeyData);
                         } catch (Exception e) {
-                            this.parseResult.setErrorInfo(ErrorCode.ERR_ROUTE_CALC, "ROUTE CALC ERROR: " + e.getMessage() + ", SQL: " + sql);
+                            this.parseResult.setErrorInfo(ErrorCode.ERR_ROUTE_CALC, "ROUTE CALC ERROR:  " + e.getMessage() + ", SQL: " + sql);
                             return;
                         }
                     }

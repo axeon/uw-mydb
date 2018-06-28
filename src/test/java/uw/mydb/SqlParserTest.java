@@ -55,7 +55,7 @@ public class SqlParserTest {
     }
 
 //    private static String selectSql ="select * from user_info where id=1000 ";
-private static String selectSql = "select * from sbtest1";
+private static String selectSql = "select * from sbtest1 WHERE id in (select id from sbtest1)";
 
     @Benchmark
     public void testSelect() {

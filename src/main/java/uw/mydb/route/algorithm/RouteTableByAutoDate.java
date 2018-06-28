@@ -2,7 +2,9 @@ package uw.mydb.route.algorithm;
 
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.route.RouteAlgorithm;
+import uw.mydb.route.SchemaCheckService;
 
+import javax.xml.validation.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -145,7 +147,6 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
 
     /**
      * 此方法用于返回创建表信息。
-     * 对于日期类型，一般会向前进一天。
      *
      * @param tableConfig
      * @param routeInfos
@@ -153,24 +154,13 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
      */
     @Override
     public List<RouteInfo> getAllRouteList(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
-        List<String> list = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-        list.add(today.format(FORMAT_PATTERN));
-        //针对间隔的优化判定
-        if (FORMAT_PATTERN_CODE.contains("dd")) {
-            today = today.plusDays(1);
-        } else if (FORMAT_PATTERN_CODE.contains("MM")) {
-            today = today.plusMonths(1);
-        } else if (FORMAT_PATTERN_CODE.contains("yy")) {
-            today = today.plusYears(1);
-        }
-        list.add(today.format(FORMAT_PATTERN));
         //循环赋值
         List<RouteInfo> newList = new ArrayList<>();
         for (RouteInfo routeInfo : routeInfos) {
-            for (String text : list) {
+            List<String> list =SchemaCheckService.getTableList(routeInfo.getMysqlGroup(),routeInfo.getDatabase(),routeInfo.getTable()+"_[0-9]");
+            for (String tab : list) {
                 RouteInfo copy = routeInfo.copy();
-                copy.setTable(new StringBuilder(routeInfo.getTable()).append("_").append(text).toString());
+                copy.setTable(tab);
                 newList.add(copy);
             }
         }
