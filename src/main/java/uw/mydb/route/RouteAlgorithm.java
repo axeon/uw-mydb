@@ -435,6 +435,12 @@ public abstract class RouteAlgorithm {
         public void calcType() {
             if (value1 == null || value2 == null) {
                 type = SINGLE;
+                if (value1 == null && value2 != null) {
+                    value1 = value2;
+                }
+                if (value1 != null && value2 == null) {
+                    value2 = value1;
+                }
             }
         }
 
