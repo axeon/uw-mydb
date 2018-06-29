@@ -608,12 +608,12 @@ public class SqlParser {
         lexer.nextToken();
         //解析表名
         parseTableName(lexer);
-        //原计划在这做优化，结果子查询不能重写了
-//        if (!checkRouteKeyExists()) {
-//            lexer.skipToEOF();
-//            splitSubSql(lexer);
-//            return;
-//        }
+        //原计划在这做优化，可能导致子查询不能重写
+        if (!checkRouteKeyExists()) {
+            lexer.skipToEOF();
+            splitSubSql(lexer);
+            return;
+        }
         //如果有routeData匹配，采取匹配routeKeyData
         //此时走values的路
         if (lexer.token() == Token.LPAREN) {
@@ -664,10 +664,6 @@ public class SqlParser {
                     }
                 }
             }
-        } else if (lexer.token() == Token.SELECT) {
-            //如果后面跟着select，则根据select匹配。
-        } else {
-            //无法解析了。
         }
         if (!lexer.isEOF()) {
             lexer.skipToEOF();
