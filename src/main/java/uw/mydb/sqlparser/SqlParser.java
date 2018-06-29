@@ -1072,7 +1072,7 @@ public class SqlParser {
      */
     private void generateSqlInfo() {
         //没有匹配到表名，直接给默认schema了。
-        if (subSqls.size() <= 1) {
+        if (subSqls.size() <= 1 && mainRouteData == null) {
             sqlInfo = new SqlParseResult.SqlInfo(sql);
             sqlInfo.setMysqlGroup(schema.getBaseNode());
             sqlInfo.setDatabase(schema.getName());
