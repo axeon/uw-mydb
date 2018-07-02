@@ -173,7 +173,7 @@ public class RouteManager {
     }
 
     /**
-     * 获得要创建表的信息。
+     * 获得所有表的信息。
      *
      * @param tableConfig
      * @return
@@ -187,4 +187,18 @@ public class RouteManager {
         return routeInfo;
     }
 
+    /**
+     * 获得要创建表的信息。
+     *
+     * @param tableConfig
+     * @return
+     */
+    public static List<RouteAlgorithm.RouteInfo> getRouteListForCreate(MydbConfig.TableConfig tableConfig) throws RouteAlgorithm.RouteException {
+        List<RouteAlgorithm> routeAlgorithms = getRouteAlgorithmList(tableConfig.getRoute());
+        List<RouteAlgorithm.RouteInfo> routeInfo = new ArrayList<>();
+        for (RouteAlgorithm routeAlgorithm : routeAlgorithms) {
+            routeInfo = routeAlgorithm.getRouteListForCreate(tableConfig, routeInfo);
+        }
+        return routeInfo;
+    }
 }

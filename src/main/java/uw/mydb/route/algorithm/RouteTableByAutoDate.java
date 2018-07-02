@@ -147,6 +147,40 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
 
     /**
      * 此方法用于返回创建表信息。
+     * 对于日期类型，一般会向前进一天。
+     *
+     * @param tableConfig
+     * @param routeInfos
+     * @return
+     */
+    @Override
+    public List<RouteInfo> getRouteListForCreate(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
+        List<String> list = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        list.add(today.format(FORMAT_PATTERN));
+        //针对间隔的优化判定
+        if (FORMAT_PATTERN_CODE.contains("dd")) {
+            today = today.plusDays(1);
+        } else if (FORMAT_PATTERN_CODE.contains("MM")) {
+            today = today.plusMonths(1);
+        } else if (FORMAT_PATTERN_CODE.contains("yy")) {
+            today = today.plusYears(1);
+        }
+        list.add(today.format(FORMAT_PATTERN));
+        //循环赋值
+        List<RouteInfo> newList = new ArrayList<>();
+        for (RouteInfo routeInfo : routeInfos) {
+            for (String text : list) {
+                RouteInfo copy = routeInfo.copy();
+                copy.setTable(new StringBuilder(routeInfo.getTable()).append("_").append(text).toString());
+                newList.add(copy);
+            }
+        }
+        return newList;
+    }
+
+    /**
+     * 此方法用于返回创建表信息。
      *
      * @param tableConfig
      * @param routeInfos

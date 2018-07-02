@@ -254,7 +254,7 @@ public class SchemaCheckService {
                 //检查算法情况。
                 List<RouteAlgorithm.RouteInfo> routeInfos = null;
                 try {
-                    routeInfos = RouteManager.getAllRouteList(tableConfig);
+                    routeInfos = RouteManager.getRouteListForCreate(tableConfig);
                     for (RouteAlgorithm.RouteInfo routeInfo : routeInfos) {
                         checkAndCreateTable(tableConfig, routeInfo);
                     }

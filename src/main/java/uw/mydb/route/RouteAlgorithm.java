@@ -138,6 +138,17 @@ public abstract class RouteAlgorithm {
     }
 
     /**
+     * 此方法用于返回创建表信息。
+     *
+     * @param tableConfig
+     * @param routeInfos
+     * @return
+     */
+    public List<RouteInfo> getRouteListForCreate(MydbConfig.TableConfig tableConfig, List<RouteInfo> routeInfos) throws RouteException {
+        return getAllRouteList(tableConfig, routeInfos);
+    }
+
+    /**
      * 存放路由Key。
      */
     public static class RouteKeyData {
