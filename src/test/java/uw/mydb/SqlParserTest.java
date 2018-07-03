@@ -27,13 +27,16 @@ import java.util.concurrent.TimeUnit;
 public class SqlParserTest {
 
     private static MydbConfig.SchemaConfig schema = null;
-    private static String insertSql = "insert into msc_user (id,msc_type,ref_id,ref_tag,username,password,real_name,nick_name,mobile,email,remark,auth_flag,ip_filter_type,ip_filter_value,state,create_date,modify_date) values (1000,0,0,null,null,null,null,'axeon',null,null,null,0,0,null,0,null,null)";
+    private static String insertSql = "insert into alitrip_hotel_room\n" +
+            "(saas_id,distributor_mch_id,channel_room_id,channel_hotel_id,channel_room_name,sys_hotel_id,sys_roomtype_id,\n" +
+            "channel_room_state,channel_room_match_state,channel_bed_type,create_date,modify_date)\n" +
+            "values (10002,10009,40965089034,24733008034,'杨过4房','10001_587517','10001_587517_764478',0,0,'大床','2018-07-03 14:56:29.2')";
 
-//    @Benchmark
-//    public void testInsert() {
-//        SqlParser parser = new SqlParser(schema, insertSql);
-//        SqlParseResult result = parser.parse();
-//    }
+    @Benchmark
+    public void testInsert() {
+        SqlParser parser = new SqlParser(schema, insertSql);
+        SqlParseResult result = parser.parse();
+    }
 //
 //    private static updateSql = "update user_info set create_date=now() where mch_id=1000 ";
 //    @Benchmark
@@ -55,11 +58,11 @@ public class SqlParserTest {
     }
 
 //    private static String selectSql ="select * from user_info where id=1000 ";
-private static String selectSql = "select * from sbtest1 WHERE id in (select id from sbtest1)";
+//private static String selectSql = "select * from sbtest1 WHERE id in (select id from sbtest1)";
 
-    @Benchmark
-    public void testSelect() {
-        SqlParser parser = new SqlParser(schema, selectSql);
-        SqlParseResult result = parser.parse();
-    }
+//    @Benchmark
+//    public void testSelect() {
+//        SqlParser parser = new SqlParser(schema, selectSql);
+//        SqlParseResult result = parser.parse();
+//    }
 }

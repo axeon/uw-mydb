@@ -633,11 +633,11 @@ public class SqlParser {
                     //可以直接退了
                     break;
                 }
+                //如果匹配完了，则退出。
             }
             lexer.skipTo(Token.VALUES);
             lexer.nextToken();
             lexer.check(Token.LPAREN);
-            lexer.nextToken();
             pos = 0;
             while (!lexer.isEOF()) {
                 lexer.nextToken();
@@ -659,6 +659,7 @@ public class SqlParser {
                         for (RouteAlgorithm.RouteKeyValue rkv : rkvs) {
                             if (rkv.getType() == pos + 100) {
                                 rkv.putValue(lexer.paramValueString());
+                                break;
                             }
                         }
                     }
