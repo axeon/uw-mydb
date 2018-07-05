@@ -55,11 +55,15 @@ public class RouteTableByAutoKey extends RouteAlgorithm {
         //循环赋值
         List<RouteInfo> newList = new ArrayList<>();
         for (RouteInfo routeInfo : routeInfos) {
-            List<String> list =SchemaCheckService.getTableList(routeInfo.getMysqlGroup(),routeInfo.getDatabase(),routeInfo.getTable()+"_[0-9]");
-            for (String tab : list) {
-                RouteInfo copy = routeInfo.copy();
-                copy.setTable(tab);
-                newList.add(copy);
+            List<String> list = SchemaCheckService.getTableList(routeInfo.getMysqlGroup(), routeInfo.getDatabase(), "^" + routeInfo.getTable() + "_[0-9]*$");
+            if (list.size() == 0) {
+                newList.add(routeInfo);
+            } else {
+                for (String tab : list) {
+                    RouteInfo copy = routeInfo.copy();
+                    copy.setTable(tab);
+                    newList.add(copy);
+                }
             }
         }
         return newList;
