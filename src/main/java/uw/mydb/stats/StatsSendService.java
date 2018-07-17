@@ -5,14 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * influxDB 操作类
+ * 统计信息发送服务。
  *
  * @author axeon
  */
 @Component
-public class InfluxDBService {
+public class StatsSendService {
 
-    private static final Logger log = LoggerFactory.getLogger(InfluxDBService.class);
+    private static final Logger log = LoggerFactory.getLogger(StatsSendService.class);
 
 //    @Bean
 //    InfluxDB influxDB() {
@@ -29,6 +29,8 @@ public class InfluxDBService {
     public void updateMydbSqlStats() {
 
     }
+
+
 
 
 }

@@ -281,6 +281,6 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
             }
         }
         ctx.flush();
-//        StatsFactory.statsMydb();
+//        StatsManager.statsMydb();
     }
 }

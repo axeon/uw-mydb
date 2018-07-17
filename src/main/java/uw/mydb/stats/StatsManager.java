@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  *
  * @author axeon
  */
-public class StatsFactory {
+public class StatsManager {
 
     private static MydbConfig.Stats config = MydbConfigManager.getConfig().getStats();
 
@@ -44,6 +44,7 @@ public class StatsFactory {
      * 基于mysql库表的统计表，用于metric统计。
      */
     private static Map<String, SqlStats> mysqlDbStatsMap = new ConcurrentHashMap();
+
 
     /**
      * 获得server Sql统计。
@@ -220,7 +221,7 @@ public class StatsFactory {
     public static void statsSlowSql(String client, String schema, String sql, int routeSize, int rowsCount, long sendBytes, long recvBytes, long exeTime, long exeDate) {
         if (exeTime > config.getSlowQueryTimeout()) {
             SlowSql slowSql = new SlowSql(client, schema, sql, routeSize, rowsCount, sendBytes, recvBytes, exeTime, exeDate);
-            //此处发送慢sql。
+            //FIXME axeon@2018/7/12  此处发送slowSql。
         }
     }
 

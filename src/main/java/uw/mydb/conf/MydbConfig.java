@@ -148,6 +148,11 @@ public class MydbConfig {
          */
         private MetricService metricService = new MetricService();
 
+        /**
+         * elastic search peizhi配置。
+         */
+        private EsService esService = new EsService();
+
         public boolean isServerMetrics() {
             return serverMetrics;
         }
@@ -789,6 +794,64 @@ public class MydbConfig {
     }
 
 
+    /**
+     * ES主机配置
+     */
+    public static class EsService {
+
+        /**
+         * 连接超时
+         */
+        private long connectTimeout = 10000;
+
+        /**
+         * 读超时
+         */
+        private long readTimeout = 10000;
+
+        /**
+         * 写超时
+         */
+        private long writeTimeout = 10000;
+
+        /**
+         * ES集群HTTP REST地址
+         */
+        private String clusters = null;
+
+        public long getConnectTimeout() {
+            return connectTimeout;
+        }
+
+        public void setConnectTimeout(long connectTimeout) {
+            this.connectTimeout = connectTimeout;
+        }
+
+        public long getReadTimeout() {
+            return readTimeout;
+        }
+
+        public void setReadTimeout(long readTimeout) {
+            this.readTimeout = readTimeout;
+        }
+
+        public long getWriteTimeout() {
+            return writeTimeout;
+        }
+
+        public void setWriteTimeout(long writeTimeout) {
+            this.writeTimeout = writeTimeout;
+        }
+
+        public String getClusters() {
+            return clusters;
+        }
+
+        public void setClusters(String clusters) {
+            this.clusters = clusters;
+        }
+
+    }
     /**
      * 监控信息配置
      *

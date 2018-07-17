@@ -9,7 +9,7 @@ import uw.mydb.mysql.util.ConcurrentBag;
 import uw.mydb.protocol.packet.*;
 import uw.mydb.protocol.util.Capability;
 import uw.mydb.sqlparser.SqlParseResult;
-import uw.mydb.stats.StatsFactory;
+import uw.mydb.stats.StatsManager;
 import uw.mydb.util.SecurityUtils;
 import uw.mydb.util.SystemClock;
 
@@ -224,7 +224,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
         this.lastAccess = now;
 
         //最后统计mysql执行信息。
-        StatsFactory.statsMysql(mysqlService.getGroupName(), mysqlService.getName(), database, isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
+        StatsManager.statsMysql(mysqlService.getGroupName(), mysqlService.getName(), database, isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
 
         if (this.sessionCallback != null) {
             //再执行解绑

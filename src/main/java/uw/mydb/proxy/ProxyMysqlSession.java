@@ -19,7 +19,7 @@ import uw.mydb.protocol.util.Capability;
 import uw.mydb.protocol.util.ErrorCode;
 import uw.mydb.sqlparser.SqlParseResult;
 import uw.mydb.sqlparser.SqlParser;
-import uw.mydb.stats.StatsFactory;
+import uw.mydb.stats.StatsManager;
 import uw.mydb.util.RandomUtils;
 import uw.mydb.util.SecurityUtils;
 import uw.mydb.util.SystemClock;
@@ -584,8 +584,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         //开始统计数据了。
         this.exeTime = SystemClock.now() - lastReadTime;
         //开始统计。
-        StatsFactory.statsMydb(host, schema.getName(), routeResult.getTable(), isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
-        StatsFactory.statsSlowSql(host, schema.getName(), routeResult.getSql(), routeResult.isSingle() ? 1 : routeResult.getSqlInfos().size(), Math.max(dataRowsCount, affectRowsCount), sendBytes, recvBytes, exeTime, lastReadTime);
+        StatsManager.statsMydb(host, schema.getName(), routeResult.getTable(), isMasterSql, isExeSuccess, exeTime, dataRowsCount, affectRowsCount, sendBytes, recvBytes);
+        StatsManager.statsSlowSql(host, schema.getName(), routeResult.getSql(), routeResult.isSingle() ? 1 : routeResult.getSqlInfos().size(), Math.max(dataRowsCount, affectRowsCount), sendBytes, recvBytes, exeTime, lastReadTime);
         //数据归零
         routeResult = null;
         isMasterSql = false;

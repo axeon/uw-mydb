@@ -2,7 +2,7 @@ package uw.mydb.rest;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uw.mydb.stats.StatsFactory;
+import uw.mydb.stats.StatsManager;
 import uw.mydb.stats.vo.MySqlRunInfo;
 import uw.mydb.stats.vo.ServerRunInfo;
 import uw.mydb.stats.vo.SqlStats;
@@ -23,7 +23,7 @@ public class StatsApi {
      */
     @RequestMapping("/sql/server")
     public SqlStatsPair getMydbStats() {
-        return StatsFactory.getServerSqlStats();
+        return StatsManager.getServerSqlStats();
     }
 
     /**
@@ -31,7 +31,7 @@ public class StatsApi {
      */
     @RequestMapping("/sql/client")
     public Map<String, SqlStatsPair> getClients() {
-        return StatsFactory.getClientSqlStatsMap();
+        return StatsManager.getClientSqlStatsMap();
     }
 
     /**
@@ -39,7 +39,7 @@ public class StatsApi {
      */
     @RequestMapping("/sql/schema")
     public Map<String, SqlStatsPair> getSchemaStats() {
-        return StatsFactory.getSchemaSqlStatsMap();
+        return StatsManager.getSchemaSqlStatsMap();
     }
 
     /**
@@ -47,7 +47,7 @@ public class StatsApi {
      */
     @RequestMapping("/sql/mysql")
     public Map<String, SqlStats> getMysqlStats() {
-        return StatsFactory.getMysqlSqlStatsMap();
+        return StatsManager.getMysqlSqlStatsMap();
     }
 
     /**
@@ -55,7 +55,7 @@ public class StatsApi {
      */
     @RequestMapping("/run/server")
     public ServerRunInfo getServerRunInfo() {
-        return StatsFactory.getServerRunStats();
+        return StatsManager.getServerRunStats();
     }
 
     /**
@@ -63,7 +63,7 @@ public class StatsApi {
      */
     @RequestMapping("/run/mysql")
     public Map<String, MySqlRunInfo> getMySqlRunInfos() {
-        return StatsFactory.getMySqlServiceStats();
+        return StatsManager.getMySqlServiceStats();
     }
 
 }
