@@ -1,6 +1,7 @@
 spring:
   cloud:
     config:
+      name: uw-mydb
       profile: prod
       username: prod-user
       password: 8gcViHYu7dcIbiHo
