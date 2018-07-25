@@ -24,7 +24,7 @@ build:
     - docker tag ${CI_PROJECT_NAME}:${VERSION}_${CI_RUNNER_ID} ${REGISTRY_PRODUCT_URL}/${CI_PROJECT_NAME}:${VERSION}
     - docker tag ${CI_PROJECT_NAME}:${VERSION}_${CI_RUNNER_ID}  ${REGISTRY_TEST_URL}/zwy/${CI_PROJECT_NAME}:${VERSION}
     - docker push ${REGISTRY_TEST_URL}/zwy/${CI_PROJECT_NAME}:${VERSION}
-    #- docker push  ${REGISTRY_PRODUCT_URL}/${CI_PROJECT_NAME}:${VERSION}
+    #- docker push ${REGISTRY_PRODUCT_URL}/${CI_PROJECT_NAME}:${VERSION}
 
 # 部署测试服务器
 deploy_test:

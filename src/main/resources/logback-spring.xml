@@ -35,7 +35,7 @@
                     <exclude>org\.springframwork\.*</exclude>
                     <rootCauseFirst>true</rootCauseFirst>
                 </throwableConverter>
-                <customFields>{"appname":"hotel-app"}</customFields>
+                <customFields>{"appname":"uw-mydb"}</customFields>
             </encoder>
         </appender>
         <root level="INFO">

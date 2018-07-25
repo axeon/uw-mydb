@@ -1,12 +1,12 @@
 spring:
   cloud:
     config:
+      name: uw-mydb
       profile: prod
       username: prod-user
       password: 8gcViHYu7dcIbiHo
-
     consul:
-      host: 10.8.8.85
+      host: 10.8.8.88
       port: 8500
       discovery:
         instance-id: ${spring.application.name}:${spring.cloud.consul.discovery.ip-address}:${spring.cloud.consul.discovery.port}
