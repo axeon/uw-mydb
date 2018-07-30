@@ -48,10 +48,11 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
     public void config() {
         Map<String, String> params = algorithmConfig.getParams();
         //提前创建的日期分表数量。
-        String prepareNumStr = params.get("prepare-num");
+        String prepareNumStr = params.getOrDefault("prepare-num", "1");
         try {
             prepareNum = Integer.parseInt(prepareNumStr);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         //datePattern,日期时间格式
         String datePattern = params.get("date-pattern");
         if (datePattern != null) {
