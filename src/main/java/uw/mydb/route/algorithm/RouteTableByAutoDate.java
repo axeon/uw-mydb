@@ -38,9 +38,20 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
      */
     private String FORMAT_PATTERN_CODE = null;
 
+    /**
+     * 日期预创建数量。
+     */
+    private int prepareNum = 1;
+
+
     @Override
     public void config() {
         Map<String, String> params = algorithmConfig.getParams();
+        //提前创建的日期分表数量。
+        String prepareNumStr = params.get("prepare-num");
+        try {
+            prepareNum = Integer.parseInt(prepareNumStr);
+        } catch (Exception e) {}
         //datePattern,日期时间格式
         String datePattern = params.get("date-pattern");
         if (datePattern != null) {
@@ -154,15 +165,17 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
         List<String> list = new ArrayList<>();
         LocalDate today = LocalDate.now();
         list.add(today.format(FORMAT_PATTERN));
-        //针对间隔的优化判定
-        if (FORMAT_PATTERN_CODE.contains("dd")) {
-            today = today.plusDays(1);
-        } else if (FORMAT_PATTERN_CODE.contains("MM")) {
-            today = today.plusMonths(1);
-        } else if (FORMAT_PATTERN_CODE.contains("yy")) {
-            today = today.plusYears(1);
+        for (int i = 0; i < prepareNum; i++) {
+            //针对间隔的优化判定
+            if (FORMAT_PATTERN_CODE.contains("dd")) {
+                today = today.plusDays(1);
+            } else if (FORMAT_PATTERN_CODE.contains("MM")) {
+                today = today.plusMonths(1);
+            } else if (FORMAT_PATTERN_CODE.contains("yy")) {
+                today = today.plusYears(1);
+            }
+            list.add(today.format(FORMAT_PATTERN));
         }
-        list.add(today.format(FORMAT_PATTERN));
         //循环赋值
         List<RouteInfo> newList = new ArrayList<>();
         for (RouteInfo routeInfo : routeInfos) {

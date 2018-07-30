@@ -68,6 +68,7 @@ EXPLAIN
  *  参数：
  *  date-pattern: 可以不指定，设置为日期来源格式
  *  format-pattern：格式化成的样式
+ *  prepare-num 提前建表的个数
 ## RouteTableByAutoKey 基于关键字的分表算法
  * 根据给定的key，来判断是否存在表，如果没有表，则动态自动创建以key为后缀的表。。
  * 需要在配置参数中配置mysqlGroup和database属性。
