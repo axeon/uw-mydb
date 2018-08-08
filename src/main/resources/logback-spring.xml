@@ -60,7 +60,7 @@
             </throwableConverter>
             <maxBatchThreads>5</maxBatchThreads>
             <maxBatchQueueSize>10</maxBatchQueueSize>
-            <maxFlushInMilliseconds>1000</maxFlushInMilliseconds>
+            <maxFlushInMilliseconds>10000</maxFlushInMilliseconds>
             <jmxMonitoring>true</jmxMonitoring>
         </appender>
         <root level="INFO">
