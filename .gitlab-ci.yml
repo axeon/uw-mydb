@@ -7,7 +7,7 @@ variables:
   PORT: 29502
   MEMORY: 2500
   REGISTRY_PRODUCT_URL: "10.8.8.85:5000"
-  REGISTRY_TEST_URL: "docker.zowoyoo.com"
+  REGISTRY_TEST_URL: "docker.zowoyoo.com:7443"
 
 # 编译
 build:
