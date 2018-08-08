@@ -106,6 +106,17 @@
             <version>1.20</version>
             <scope>test</scope>
         </dependency>
+        <!-- logging -->
+        <dependency>
+            <groupId>com.umtone</groupId>
+            <artifactId>uw-logback-es</artifactId>
+            <version>0.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.umtone</groupId>
+            <artifactId>uw-httpclient</artifactId>
+            <version>0.6.2</version>
+        </dependency>
     </dependencies>
 
     <build>

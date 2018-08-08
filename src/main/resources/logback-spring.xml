@@ -15,31 +15,57 @@
     <springProfile name="test">
         <include
                 resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+        <appender name="ES"
+                  class="uw.logback.es.appender.ElasticSearchAppender">
+            <esHost>http://192.168.88.16:9200</esHost>
+            <index>uw-mydb</index>
+            <indexType>logs</indexType>
+            <indexPattern>_yyyyMMdd</indexPattern>
+            <appName>uw-mydb/${appVersion}</appName>
+            <appHost>${SPRING_CLOUD_CONSUL_DISCOVERY_IP_ADDRESS}/${UW_AUTH_CLIENT_HOST_ID}</appHost>
+            <throwableConverter
+                    class="uw.logback.es.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>100</maxDepthPerThrowable>
+                <maxLength>8096</maxLength>
+                <shortenedClassNameLength>100</shortenedClassNameLength>
+                <exclude>org\.springframwork\.*</exclude>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+            <maxBatchThreads>5</maxBatchThreads>
+            <maxBatchQueueSize>10</maxBatchQueueSize>
+            <maxFlushInMilliseconds>1000</maxFlushInMilliseconds>
+            <jmxMonitoring>true</jmxMonitoring>
+        </appender>
         <root level="INFO">
+            <appender-ref ref="ES"/>
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
     <springProfile name="prod">
-        <appender name="LOGSTASH"
-                  class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-            <destination>10.8.8.78:9600</destination>
-            <writeBufferSize>256000</writeBufferSize>
-            <encoder charset="UTF-8"
-                     class="net.logstash.logback.encoder.LogstashEncoder">
-                <throwableConverter
-                        class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                    <maxDepthPerThrowable>100</maxDepthPerThrowable>
-                    <maxLength>8096</maxLength>
-                    <shortenedClassNameLength>100</shortenedClassNameLength>
-                    <exclude>org\.springframwork\.*</exclude>
-                    <rootCauseFirst>true</rootCauseFirst>
-                </throwableConverter>
-                <customFields>{"appname":"uw-mydb"}</customFields>
-            </encoder>
+        <appender name="ES"
+                  class="uw.logback.es.appender.ElasticSearchAppender">
+            <esHost>http://10.8.8.50:9200</esHost>
+            <index>uw-mydb</index>
+            <indexType>logs</indexType>
+            <indexPattern>_yyyyMMdd</indexPattern>
+            <appName>uw-mydb/${appVersion}</appName>
+            <appHost>${SPRING_CLOUD_CONSUL_DISCOVERY_IP_ADDRESS}/${UW_AUTH_CLIENT_HOST_ID}</appHost>
+            <throwableConverter
+                    class="uw.logback.es.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>100</maxDepthPerThrowable>
+                <maxLength>8096</maxLength>
+                <shortenedClassNameLength>100</shortenedClassNameLength>
+                <exclude>org\.springframwork\.*</exclude>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+            <maxBatchThreads>5</maxBatchThreads>
+            <maxBatchQueueSize>10</maxBatchQueueSize>
+            <maxFlushInMilliseconds>1000</maxFlushInMilliseconds>
+            <jmxMonitoring>true</jmxMonitoring>
         </appender>
         <root level="INFO">
-            <appender-ref ref="LOGSTASH"/>
+            <appender-ref ref="ES"/>
         </root>
     </springProfile>
 </configuration>

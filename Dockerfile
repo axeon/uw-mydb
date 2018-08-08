@@ -2,13 +2,16 @@ FROM frolvlad/alpine-oraclejdk8:slim
 
 MAINTAINER Acris Liu "acrisliu@gmail.com"
 
+COPY docker-entrypoint.sh /usr/local/bin/
+
 ENV TIMEZONE="Asia/Shanghai"
 # Set Timezone
 RUN set -ex \
     && apk add --no-cache --virtual .build-deps tzdata \
     && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone \
-    && apk del .build-deps
+    && apk del .build-deps \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 VOLUME /tmp
 
@@ -21,4 +24,5 @@ ENV SPRING_BOOT_OPTS=""
 
 EXPOSE 8080
 EXPOSE 3300
-ENTRYPOINT exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /$APP_NAME.jar $SPRING_BOOT_OPTS
+
+ENTRYPOINT ["docker-entrypoint.sh"]
