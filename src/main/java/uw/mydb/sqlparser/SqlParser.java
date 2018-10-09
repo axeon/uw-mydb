@@ -255,7 +255,7 @@ public class SqlParser {
                 String value = hint.substring(pos + 1, mark).trim();
                 if (name.equalsIgnoreCase(HintTypes.DB_TYPE)) {
                     //此处处理balance类型。
-                    if ("master".equalsIgnoreCase(value)) {
+                    if (HintTypes.DB_TYPE_MASTER.equalsIgnoreCase(value)) {
                         parseResult.setMaster(true);
                     } else {
                         parseResult.setMaster(false);
