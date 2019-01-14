@@ -104,8 +104,8 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
             startDate = LocalDateTime.parse(startValue, DATE_PATTERN);
             endDate = LocalDateTime.parse(endValue, DATE_PATTERN);
         } else {
-            startDate = LocalDateTime.parse(startValue, DATE_PATTERN_DEFAULT);
-            endDate = LocalDateTime.parse(endValue, DATE_PATTERN_DEFAULT);
+            startDate = fitParse(startValue);
+            endDate = fitParse(endValue);
         }
         //判定先后顺序
         while (startDate.compareTo(endDate) <= 0) {
@@ -215,6 +215,16 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
         return newList;
     }
 
+    /**
+     * 最大化适配解析。
+     * @return
+     */
+    private final LocalDateTime fitParse(String dateValue){
+        if (dateValue.length()>19){
+            dateValue = dateValue.substring(0,19);
+        }
+        return LocalDateTime.parse(dateValue, DATE_PATTERN_DEFAULT);
+    }
 
     /**
      * 日期类型快速格式化。
@@ -275,4 +285,5 @@ public class RouteTableByAutoDate extends RouteAlgorithm {
         }
         return sb.toString();
     }
+
 }
