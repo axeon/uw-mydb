@@ -15,28 +15,7 @@
     <springProfile name="test">
         <include
                 resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-        <appender name="ES"
-                  class="uw.logback.es.appender.ElasticSearchAppender">
-            <esHost>http://192.168.88.16:9200</esHost>
-            <index>uw-mydb</index>
-            <indexType>logs</indexType>
-            <indexPattern>_yyyyMMdd</indexPattern>
-            <appName>uw-mydb/${appVersion}</appName>
-            <appHost>${SPRING_CLOUD_CONSUL_DISCOVERY_IP_ADDRESS}/${UW_AUTH_CLIENT_HOST_ID}</appHost>
-            <throwableConverter
-                    class="uw.logback.es.stacktrace.ShortenedThrowableConverter">
-                <maxDepthPerThrowable>100</maxDepthPerThrowable>
-                <maxLength>8096</maxLength>
-                <shortenedClassNameLength>100</shortenedClassNameLength>
-                <exclude>org\.springframwork\.*</exclude>
-                <rootCauseFirst>true</rootCauseFirst>
-            </throwableConverter>
-            <maxBatchThreads>5</maxBatchThreads>
-            <maxFlushInMilliseconds>10000</maxFlushInMilliseconds>
-            <jmxMonitoring>true</jmxMonitoring>
-        </appender>
         <root level="INFO">
-            <appender-ref ref="ES"/>
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
