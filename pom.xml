@@ -105,17 +105,12 @@
         <dependency>
             <groupId>com.umtone</groupId>
             <artifactId>uw-logback-es</artifactId>
-            <version>0.1.10</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.umtone</groupId>
             <artifactId>uw-httpclient</artifactId>
-            <version>0.6.8</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.9.6</version>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 
