@@ -1,6 +1,6 @@
 FROM frolvlad/alpine-oraclejdk8:slim
 
-MAINTAINER Acris Liu "acrisliu@gmail.com"
+MAINTAINER axeon "23231269@qq.com"
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
