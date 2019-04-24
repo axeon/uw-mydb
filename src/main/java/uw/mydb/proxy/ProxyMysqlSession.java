@@ -43,6 +43,12 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     private static final Logger logger = LoggerFactory.getLogger(ProxyMysqlSession.class);
 
     /**
+     * 多节点执行的异步线程池。
+     */
+    private static final ThreadPoolExecutor multiNodeExecutor = new ThreadPoolExecutor(5, 500, 30L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MutiNodeService-%d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
+
+    /**
      * 全局统一的sessionId生成器。
      */
     private static AtomicLong sessionIdGenerator = new AtomicLong();
@@ -152,11 +158,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     private SqlParseResult routeResult;
 
-    /**
-     * 多节点执行的异步线程池。
-     */
-    private ThreadPoolExecutor multiNodeExecutor = new ThreadPoolExecutor(10, 1000, 20L, TimeUnit.SECONDS, new SynchronousQueue<>(),
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MutiNodeService-%d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
+
 
 
     public ProxyMysqlSession(ChannelHandlerContext ctx) {

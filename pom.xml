@@ -5,7 +5,7 @@
 
     <groupId>com.umtone</groupId>
     <artifactId>uw-mydb</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>uw-mydb</name>
@@ -67,7 +67,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.34.Final</version>
+            <version>4.1.35.Final</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
