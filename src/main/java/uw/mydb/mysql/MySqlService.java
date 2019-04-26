@@ -129,7 +129,7 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
      */
     public boolean start() {
         if (status.compareAndSet(false, true)) {
-            group = new NioEventLoopGroup(0, new ThreadFactoryBuilder().setNameFormat("mysql_" + name).build());
+            group = new NioEventLoopGroup(0, new ThreadFactoryBuilder().setNameFormat("mysql-" + name+"-%d").build());
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
