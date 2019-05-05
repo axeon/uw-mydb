@@ -39,11 +39,11 @@ public class MySqlMaintenanceService {
      */
     static boolean start() {
         if (STATE.compareAndSet(false, true)) {
-            houseKeepingExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("mysql-house-keeping-%d").setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
+            houseKeepingExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("mysql_house_keeping-%d").setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
             houseKeepingExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
             houseKeepingExecutor.setRemoveOnCancelPolicy(true);
 
-            closeSessionExecutor = new ThreadPoolExecutor(1, 10, 20, SECONDS, new LinkedBlockingQueue<>(100), new ThreadFactoryBuilder().setNameFormat("mysql-house-keeping-%d").setDaemon(true).build(), new ThreadPoolExecutor.CallerRunsPolicy());
+            closeSessionExecutor = new ThreadPoolExecutor(1, 10, 20, SECONDS, new LinkedBlockingQueue<>(100), new ThreadFactoryBuilder().setNameFormat("mysql_close_session-%d").setDaemon(true).build(), new ThreadPoolExecutor.CallerRunsPolicy());
             return true;
         } else {
             return false;

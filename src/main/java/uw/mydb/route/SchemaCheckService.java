@@ -57,7 +57,7 @@ public class SchemaCheckService {
     public static void start() {
         if (isRunning.compareAndSet(false, true)) {
             config = MydbConfigManager.getConfig();
-            scheduledExecutorService = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("SchemaCheckService-%d").setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
+            scheduledExecutorService = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("schema_check_service-%d").setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
             scheduledExecutorService.schedule(new Runnable() {
                 @Override
                 public void run() {

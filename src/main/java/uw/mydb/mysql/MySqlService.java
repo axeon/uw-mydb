@@ -129,14 +129,14 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
      */
     public boolean start() {
         if (status.compareAndSet(false, true)) {
-            group = new NioEventLoopGroup(0, new ThreadFactoryBuilder().setNameFormat("mysql-" + name+"-%d").build());
+            group = new NioEventLoopGroup(config.getThreadNum(), new ThreadFactoryBuilder().setNameFormat("mysql_" + name + "-%d").build());
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .option(ChannelOption.TCP_NODELAY, false)
                     .handler(new MySqlDataHandlerFactory());
-            addSessionExecutor = new ThreadPoolExecutor(1, 10, 20, SECONDS, new SynchronousQueue<>(), new ThreadFactoryBuilder().setNameFormat("mysql-house-keeping-%d").setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
+            addSessionExecutor = new ThreadPoolExecutor(1, 10, 20, SECONDS, new SynchronousQueue<>(), new ThreadFactoryBuilder().setNameFormat("mysql_add_session-%d").setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
             MySqlMaintenanceService.scheduleHouseKeeping(new HouseKeeper());
             return true;
         } else {
@@ -327,6 +327,7 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
 
     /**
      * 获得建立中的连接数。
+     *
      * @return
      */
     public int getPendingCreateConnections() {

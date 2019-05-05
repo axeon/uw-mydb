@@ -401,18 +401,27 @@ public class MydbConfig {
          * 用户名
          */
         private String user;
+
         /**
          * 密码
          */
         private String password;
+
+        /**
+         * 线程数。
+         */
+        private int threadNum = 0;
+
         /**
          * 最大连接数
          */
         private int maxConn = 1000;
+
         /**
          * 最小连接数
          */
         private int minConn = 1;
+
         /**
          * 最大重试次数
          */
@@ -520,6 +529,14 @@ public class MydbConfig {
 
         public void setConnMaxAge(int connMaxAge) {
             this.connMaxAge = connMaxAge;
+        }
+
+        public int getThreadNum() {
+            return threadNum;
+        }
+
+        public void setThreadNum(int threadNum) {
+            this.threadNum = threadNum;
         }
     }
 
@@ -852,6 +869,7 @@ public class MydbConfig {
         }
 
     }
+
     /**
      * 监控信息配置
      *
