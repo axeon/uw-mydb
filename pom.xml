@@ -5,7 +5,7 @@
 
     <groupId>com.umtone</groupId>
     <artifactId>uw-mydb</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.5</version>
     <packaging>jar</packaging>
 
     <name>uw-mydb</name>
@@ -105,12 +105,7 @@
         <dependency>
             <groupId>com.umtone</groupId>
             <artifactId>uw-logback-es</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.umtone</groupId>
-            <artifactId>uw-httpclient</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.5</version>
         </dependency>
     </dependencies>
 
