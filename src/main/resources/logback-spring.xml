@@ -21,6 +21,8 @@
     </springProfile>
 
     <springProfile name="prod">
+        <include
+                resource="org/springframework/boot/logging/logback/console-appender.xml"/>
         <appender name="ES"
                   class="uw.logback.es.appender.ElasticSearchAppender">
             <esHost>http://10.8.8.50:9200</esHost>
@@ -28,7 +30,7 @@
             <indexType>logs</indexType>
             <indexPattern>_yyyyMMdd</indexPattern>
             <appName>uw-mydb/${appVersion}</appName>
-            <appHost>${SPRING_CLOUD_CONSUL_DISCOVERY_IP_ADDRESS}/${UW_AUTH_CLIENT_HOST_ID}</appHost>
+            <appHost>${SPRING_CLOUD_CONSUL_DISCOVERY_IP_ADDRESS}</appHost>
             <throwableConverter
                     class="uw.logback.es.stacktrace.ShortenedThrowableConverter">
                 <maxDepthPerThrowable>100</maxDepthPerThrowable>
@@ -43,6 +45,7 @@
             <jmxMonitoring>true</jmxMonitoring>
         </appender>
         <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="ES"/>
         </root>
     </springProfile>
