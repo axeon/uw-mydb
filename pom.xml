@@ -67,7 +67,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.35.Final</version>
+            <version>4.1.36.Final</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>com.umtone</groupId>
             <artifactId>uw-logback-es</artifactId>
-            <version>1.0.8</version>
+            <version>1.0.9</version>
         </dependency>
     </dependencies>
 
