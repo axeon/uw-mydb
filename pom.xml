@@ -107,6 +107,12 @@
             <artifactId>uw-logback-es</artifactId>
             <version>1.0.9</version>
         </dependency>
+        <!-- 强行指定，否则logback-es无法启动 -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.12.3</version>
+        </dependency>
     </dependencies>
 
     <build>
