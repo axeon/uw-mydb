@@ -1,11 +1,14 @@
 package uw.mydb.sqlparser;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.protocol.util.ErrorCode;
 import uw.mydb.proxy.ProxyMysqlSession;
 import uw.mydb.route.RouteAlgorithm;
 import uw.mydb.route.RouteManager;
+import uw.mydb.route.algorithm.RouteDatabaseByRange;
 import uw.mydb.sqlparser.parser.HintTypes;
 import uw.mydb.sqlparser.parser.Lexer;
 import uw.mydb.sqlparser.parser.Token;
@@ -22,6 +25,9 @@ import static uw.mydb.sqlparser.parser.Token.*;
  * @author axeon
  */
 public class SqlParser {
+
+    private static final Logger log = LoggerFactory.getLogger(SqlParser.class);
+
 
     private ProxyMysqlSession proxySession;
     /**
@@ -1008,6 +1014,7 @@ public class SqlParser {
                         mainRouteData.routeInfoData = RouteManager.calculate(mainRouteData.tableConfig, routeKeyData);
                     } catch (Exception e) {
                         this.parseResult.setErrorInfo(ErrorCode.ERR_ROUTE_CALC, "ROUTE CALC ERROR: " + e.getMessage() + ", SQL: " + sql);
+                        log.warn("ROUTE CALC ERROR: " + e.getMessage() + ", SQL: " + sql);
                         return;
                     }
                 } else {
@@ -1060,6 +1067,7 @@ public class SqlParser {
                             routeData.routeInfoData = RouteManager.calculate(routeData.tableConfig, routeKeyData);
                         } catch (Exception e) {
                             this.parseResult.setErrorInfo(ErrorCode.ERR_ROUTE_CALC, "ROUTE CALC ERROR:  " + e.getMessage() + ", SQL: " + sql);
+                            log.warn("ROUTE CALC ERROR: " + e.getMessage() + ", SQL: " + sql);
                             return;
                         }
                     }
