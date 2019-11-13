@@ -228,7 +228,7 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
 
         if (this.sessionCallback != null) {
             //再执行解绑
-            this.sessionCallback.unbind();
+            this.sessionCallback.onFinish();
             this.sessionCallback = null;
         }
         //数据归零
@@ -389,6 +389,18 @@ public class MySqlSession implements ConcurrentBag.IConcurrentBagEntry {
                         dataRowsCount++;
                         break;
                 }
+        }
+    }
+
+    /**
+     * 错误提示。
+     *
+     * @param errorNo
+     * @param info
+     */
+    public void failMessage(int errorNo, String info) {
+        if (sessionCallback != null) {
+            sessionCallback.onFailMessage(errorNo, info);
         }
     }
 

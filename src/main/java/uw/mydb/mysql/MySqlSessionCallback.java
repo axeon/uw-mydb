@@ -68,8 +68,15 @@ public interface MySqlSessionCallback {
     void receiveRowDataEOFPacket(byte packetId, ByteBuf buf);
 
     /**
+     * 发送错误消息。
+     * @param errorNo
+     * @param info
+     */
+    void onFailMessage(int errorNo, String info);
+
+    /**
      * 通知解绑定。
      */
-    void unbind();
+    void onFinish();
 
 }

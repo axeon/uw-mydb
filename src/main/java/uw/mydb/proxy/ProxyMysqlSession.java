@@ -216,7 +216,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             groupService.getMasterService().getSession(this).exeCommand(false, CommandPacket.build("use " + this.schema.getName()));
         } else {
             //报错，找不到这个schema。
-            failMessage(ErrorCode.ER_NO_DB_ERROR, "No database!");
+            onFailMessage(ErrorCode.ER_NO_DB_ERROR, "No database!");
         }
     }
 
@@ -261,7 +261,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         authPacket.read(buf);
         MydbConfig.UserConfig userConfig = config.getUsers().get(authPacket.user);
         if (userConfig == null) {
-            failMessage(ctx, ErrorCode.ER_ACCESS_DENIED_ERROR, "Access denied for user '" + authPacket.user + "', because user is not exists! ");
+            onFailMessage(ctx, ErrorCode.ER_ACCESS_DENIED_ERROR, "Access denied for user '" + authPacket.user + "', because user is not exists! ");
+            onFinish();
             ctx.close();
             return;
         }
@@ -278,7 +279,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             }
         }
         if (!isPassed) {
-            failMessage(ctx, ErrorCode.ER_ACCESS_DENIED_ERROR, "Access denied for user '" + authPacket.user + "' with address '" + this.ctx + "'");
+            onFailMessage(ctx, ErrorCode.ER_ACCESS_DENIED_ERROR, "Access denied for user '" + authPacket.user + "' with address '" + this.ctx + "'");
+            onFinish();
             ctx.close();
             return;
         }
@@ -290,7 +292,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             logger.warn("no such algorithm", e);
         }
         if (!Arrays.equals(encryptPass, authPacket.password)) {
-            failMessage(ctx, ErrorCode.ER_PASSWORD_NO_MATCH, "Access denied for user '" + authPacket.user + "', because password is error ");
+            onFailMessage(ctx, ErrorCode.ER_PASSWORD_NO_MATCH, "Access denied for user '" + authPacket.user + "', because password is error ");
+            onFinish();
             ctx.close();
             return;
         }
@@ -313,7 +316,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             OKPacket.writeAuthOkToChannel(ctx);
         } else {
             String s = "Access denied for user '" + authPacket.user + "' to database '" + authPacket.database + "'";
-            failMessage(ctx, ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
+            onFailMessage(ctx, ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
+            onFinish();
             ctx.close();
             return;
         }
@@ -440,7 +444,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
         if (routeResult.hasError()) {
             //errorcode>0的，发送错误信息。
             if (routeResult.getErrorCode() > 0) {
-                failMessage(ctx, routeResult.getErrorCode(), routeResult.getErrorMessage());
+                onFailMessage(ctx, routeResult.getErrorCode(), routeResult.getErrorMessage());
+                onFinish();
             }
             return;
         }
@@ -449,7 +454,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
             //单实例执行直接绑定执行即可。
             MySqlGroupService groupService = MySqlGroupManager.getMysqlGroupService(routeResult.getSqlInfo().getMysqlGroup());
             if (groupService == null) {
-                failMessage(ctx, ErrorCode.ERR_NO_ROUTE_NODE, "Can't route to mysqlGroup!");
+                onFailMessage(ctx, ErrorCode.ERR_NO_ROUTE_NODE, "Can't route to mysqlGroup!");
+                onFinish();
                 logger.warn("无法找到合适的mysqlGroup!");
                 return;
             }
@@ -461,7 +467,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
                 mysqlSession = groupService.getLBReadService().getSession(this);
             }
             if (mysqlSession == null) {
-                failMessage(ctx, ErrorCode.ERR_NO_ROUTE_NODE, "Can't route to mysqlGroup!");
+                onFailMessage(ctx, ErrorCode.ERR_NO_ROUTE_NODE, "Can't route to mysqlGroup!");
+                onFinish();
                 logger.warn("无法找到合适的mysqlSession!");
                 return;
             }
@@ -497,7 +504,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param buf
      */
     public void kill(ChannelHandlerContext ctx, ByteBuf buf) {
-        failMessage(ctx, ErrorCode.ERR_NOT_SUPPORTED, "NOT SUPPORT OPT");
+        onFailMessage(ctx, ErrorCode.ERR_NOT_SUPPORTED, "NOT SUPPORT OPT");
+        onFinish();
     }
 
     /**
@@ -507,7 +515,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param buf
      */
     public void stmtPrepare(ChannelHandlerContext ctx, ByteBuf buf) {
-        failMessage(ctx, ErrorCode.ERR_NOT_SUPPORTED, "NOT SUPPORT OPT");
+        onFailMessage(ctx, ErrorCode.ERR_NOT_SUPPORTED, "NOT SUPPORT OPT");
+        onFinish();
     }
 
     /**
@@ -517,7 +526,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param buf
      */
     public void stmtExecute(ChannelHandlerContext ctx, ByteBuf buf) {
-        failMessage(ctx, ErrorCode.ERR_NOT_SUPPORTED, "NOT SUPPORT OPT");
+        onFailMessage(ctx, ErrorCode.ERR_NOT_SUPPORTED, "NOT SUPPORT OPT");
+        onFinish();
     }
 
     /**
@@ -527,7 +537,8 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param buf
      */
     public void stmtClose(ChannelHandlerContext ctx, ByteBuf buf) {
-        failMessage(ctx, ErrorCode.ERR_NOT_SUPPORTED, "NOT SUPPORT OPT");
+        onFailMessage(ctx, ErrorCode.ERR_NOT_SUPPORTED, "NOT SUPPORT OPT");
+        onFinish();
     }
 
     /**
@@ -538,6 +549,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      */
     public void heartbeat(ChannelHandlerContext ctx, ByteBuf buf) {
         OKPacket.writeOkToChannel(ctx);
+        onFinish();
     }
 
     /**
@@ -547,7 +559,7 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param errorNo
      * @param info
      */
-    public void failMessage(ChannelHandlerContext ctx, int errorNo, String info) {
+    public void onFailMessage(ChannelHandlerContext ctx, int errorNo, String info) {
         ErrorPacket errorPacket = new ErrorPacket();
         errorPacket.packetId = 1;
         errorPacket.errorNo = errorNo;
@@ -562,13 +574,14 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
      * @param errorNo
      * @param info
      */
-    public void failMessage(int errorNo, String info) {
+    @Override
+    public void onFailMessage(int errorNo, String info) {
         ErrorPacket errorPacket = new ErrorPacket();
         errorPacket.packetId = 1;
         errorPacket.errorNo = errorNo;
         errorPacket.message = info;
         errorPacket.writeToChannel(ctx);
-        ctx.flush();
+        this.ctx.flush();
     }
 
     /**
@@ -579,10 +592,10 @@ public class ProxyMysqlSession implements MySqlSessionCallback {
     }
 
     /**
-     * 通知解绑定。
+     * 卸载。
      */
     @Override
-    public void unbind() {
+    public void onFinish() {
         //开始统计数据了。
         this.exeTime = SystemClock.now() - lastReadTime;
         //开始统计。

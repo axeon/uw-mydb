@@ -8,6 +8,7 @@ import uw.mydb.mysql.MySqlGroupService;
 import uw.mydb.mysql.MySqlSession;
 import uw.mydb.mysql.MySqlSessionCallback;
 import uw.mydb.protocol.packet.CommandPacket;
+import uw.mydb.protocol.packet.ErrorPacket;
 import uw.mydb.protocol.packet.MySqlPacket;
 
 /**
@@ -168,15 +169,25 @@ public abstract class LocalTaskAdapter<T> implements MySqlSessionCallback {
     }
 
     /**
+     * 错误提示。
+     *
+     * @param errorNo
+     * @param info
+     */
+    @Override
+    public void onFailMessage(int errorNo, String info) {
+        //此处不用实现，unbind的时候实现了。
+    }
+
+    /**
      * 解绑的时候激活回调事件。
      */
     @Override
-    public void unbind() {
+    public void onFinish() {
         if (errorNo == 0) {
             localCmdCallback.onSuccess(data);
         } else {
             localCmdCallback.onFail(errorNo, errorMessage);
         }
-
     }
 }

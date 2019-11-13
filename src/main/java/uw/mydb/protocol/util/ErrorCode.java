@@ -8,6 +8,9 @@ package uw.mydb.protocol.util;
 public interface ErrorCode {
 
     // mydb error code
+    int ERR_NONE = 0;
+    int ERR_CONN_NOT_ALIVE=2000;
+    int ERR_CONN_BUSY_TIMEOUT=2001;
     int ERR_NO_ROUTE_NODE = 3000;
     int ERR_NO_ROUTE_INFO = 3001;
     int ERR_NO_ROUTE_KEY = 3002;

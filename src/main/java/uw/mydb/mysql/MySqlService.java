@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uw.mydb.conf.MydbConfig;
 import uw.mydb.mysql.util.ConcurrentBag;
+import uw.mydb.protocol.util.ErrorCode;
 import uw.mydb.util.SystemClock;
 
 import java.util.List;
@@ -273,19 +274,18 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
                 if (!session.isAlive()) {
                     //此处应尝试关闭。
                     sessionBag.reserve(STATE_USING, session);
-                    closeSession(session, "check session is not alive!");
+                    closeSession(session, ErrorCode.ERR_CONN_NOT_ALIVE, "check session is not alive!");
                     continue;
                 }
                 //检查是否超过最大寿命。因为在后台检查中可能无法进入寿命检查状态。
                 if (SystemClock.elapsedMillis(session.createTime, startTime) > SECONDS.toMillis(config.getConnMaxAge())) {
                     sessionBag.reserve(STATE_USING, session);
-                    closeSession(session, "(connection has maxAge timeout)");
+                    closeSession(session, ErrorCode.ERR_NONE, "(connection has maxAge timeout)");
                     continue;
                 }
                 session.bind(mysqlSessionCallback);
                 return session;
             } while (timeout >= elapsedMillis(startTime));
-            //匹配不到，返回null吧。
             return null;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -358,8 +358,16 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
      * @param session
      * @param closureReason reason to close
      */
-    void closeSession(final MySqlSession session, final String closureReason) {
-        logger.info("MySqlService[{}]({}) close session {} by {}", this.getName(), sessionBag.size(), session, closureReason);
+    void closeSession(final MySqlSession session, final int closureCode, final String closureReason) {
+        if (closureCode > 0) {
+            logger.warn("MySqlService[{}]({}) close session {} by {}", this.getName(), sessionBag.size(), session, closureReason);
+            //一定要通知报错，通知之后，会自动解绑。
+            session.failMessage(closureCode, closureReason);
+        } else {
+            logger.info("MySqlService[{}]({}) close session {} by {}", this.getName(), sessionBag.size(), session, closureReason);
+        }
+        //session必须解绑。
+        session.unbind();
         if (sessionBag.remove(session)) {
             MySqlMaintenanceService.queueCloseSession(new Runnable() {
                 @Override
@@ -460,7 +468,7 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
          */
         void checkBusyTimeout(MySqlSession session, long now) {
             if (SystemClock.elapsedMillis(session.lastAccess, now) > SECONDS.toMillis(config.getConnBusyTimeout()) && sessionBag.reserve(STATE_USING, session)) {
-                closeSession(session, "(connection has busy timeout)");
+                closeSession(session, ErrorCode.ERR_CONN_BUSY_TIMEOUT, "(connection has busy timeout)");
             } else {
                 checkAgeTimeout(session, now);
             }
@@ -474,7 +482,7 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
          */
         void checkIdleTimeout(MySqlSession session, long now, int idleCount) {
             if (idleCount > config.getMinConn() && SystemClock.elapsedMillis(session.lastAccess, now) > SECONDS.toMillis(config.getConnIdleTimeout()) && sessionBag.reserve(STATE_NORMAL, session)) {
-                closeSession(session, "(connection has idle timeout)");
+                closeSession(session, ErrorCode.ERR_NONE, "(connection has idle timeout)");
             } else {
                 //检查寿命超时。
                 checkAgeTimeout(session, now);
@@ -489,7 +497,7 @@ public class MySqlService implements ConcurrentBag.IBagStateListener {
          */
         void checkAgeTimeout(MySqlSession session, long now) {
             if (SystemClock.elapsedMillis(session.createTime, now) > SECONDS.toMillis(config.getConnMaxAge()) && sessionBag.reserve(STATE_NORMAL, session)) {
-                closeSession(session, "(connection has maxAge timeout)");
+                closeSession(session, ErrorCode.ERR_NONE, "(connection has maxAge timeout)");
             }
         }
 

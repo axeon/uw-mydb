@@ -223,8 +223,24 @@ public class ProxyMultiNodeHandler implements MySqlSessionCallback, Runnable {
      * 通知解绑定。
      */
     @Override
-    public void unbind() {
+    public void onFinish() {
         countDownLatch.countDown();
+    }
+
+    /**
+     * 错误提示。
+     *
+     * @param errorNo
+     * @param info
+     */
+    @Override
+    public void onFailMessage(int errorNo, String info) {
+        ErrorPacket errorPacket = new ErrorPacket();
+        errorPacket.packetId = 1;
+        errorPacket.errorNo = errorNo;
+        errorPacket.message = info;
+        errorPacket.writeToChannel(ctx);
+        ctx.flush();
     }
 
     @Override

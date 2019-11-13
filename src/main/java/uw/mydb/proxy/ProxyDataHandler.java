@@ -102,7 +102,8 @@ public class ProxyDataHandler extends ChannelInboundHandlerAdapter {
                     session.heartbeat(ctx, buf);
                     break;
                 default:
-                    session.failMessage(ctx, ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
+                    session.onFailMessage(ctx, ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
+                    session.onFinish();
                     break;
             }
         }
